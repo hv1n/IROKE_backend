@@ -1,4 +1,4 @@
-// Gemini 텍스트 모델에 이미지 1장 + 지시를 보내고 JSON 스키마로 답을 받는 공통 호출.
+// Gemini 텍스트 모델에 (이미지 1장 +) 지시를 보내고 JSON 스키마로 답을 받는 공통 호출.
 // 과부하(429/5xx)면 1회 재시도 후 대체 모델로 넘어간다.
 import { env } from '../env';
 import { collectTexts } from '../providers/findImagePart';
@@ -19,7 +19,8 @@ export function parseJsonText(text: string): Record<string, unknown> {
 interface Request<T> {
   label: string;
   prompt: string;
-  image: ImageBlob;
+  /** 없으면 텍스트만 보낸다 (v2 난이도 산정) */
+  image?: ImageBlob;
   schema: Record<string, unknown>;
   /** 모델 출력 텍스트를 검증해 결과로 만든다 (실패 시 throw) */
   parse: (text: string, model: string) => T;
@@ -33,7 +34,7 @@ async function callOnce<T>(model: string, req: Request<T>): Promise<T> {
       model,
       input: [
         { type: 'text', text: req.prompt },
-        { type: 'image', mime_type: req.image.mimeType, data: req.image.data.toString('base64') },
+        ...(req.image ? [{ type: 'image', mime_type: req.image.mimeType, data: req.image.data.toString('base64') }] : []),
       ],
       response_format: { type: 'text', mime_type: 'application/json', schema: req.schema },
     }),

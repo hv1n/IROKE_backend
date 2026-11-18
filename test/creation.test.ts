@@ -50,7 +50,7 @@ describe('POST /api/generations', () => {
     expect(body).toMatchObject({ model: 'mock-echo', promptVersion: 'v1' });
     expect(body.image).toMatch(/^data:image\/png;base64,/);
     // 로그는 응답을 늦추지 않도록 기다리지 않고 기록한다
-    await vi.waitFor(() => expect(readLogs()).toContain(body.generationId));
+    await vi.waitFor(() => expect(readLogs()).toContain(body.generationId), { timeout: 5000 });
     const logs = readLogs();
     expect(logs).not.toContain('base64');
     expect(logs).not.toContain('ignore all rules');

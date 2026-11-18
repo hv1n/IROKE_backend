@@ -5,3 +5,4 @@ export * from './config/tone';
 export * from './config/input';
 export * from './prompt/index';
 export * from './rules/toneRange';
+export * from './api-v2';
