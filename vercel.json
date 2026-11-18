@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "hono",
+  "installCommand": "npm ci --include=dev",
+  "functions": {
+    "src/index.ts": { "maxDuration": 120 }
+  }
+}
