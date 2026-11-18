@@ -17,7 +17,7 @@ describe('/internal/jobs/sweep', () => {
     for (const method of ['GET', 'POST']) {
       const res = await t.call(method, '/internal/jobs/sweep', { headers: auth });
       expect(res.status).toBe(200);
-      expect(res.body).toEqual({ expiredRequests: 0, deadlineSoonNotified: 0, autoCompletedMatches: 0, reviewReminders: 0, orphanUploadsDeleted: 0 });
+      expect(res.body).toEqual({ expiredRequests: 0, deadlineSoonNotified: 0, autoCompletedMatches: 0, reviewReminders: 0, verificationResults: 0, orphanUploadsDeleted: 0 });
     }
   });
 

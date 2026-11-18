@@ -111,7 +111,37 @@ test/                엔드포인트별 테스트
 | `GET /api/board/:requestId` | 디자이너 | 시안 URL은 인증 디자이너만 |
 | `POST /api/requests/:id/responses` | 인증 디자이너 | 응답 (요청당 1회) |
 | `GET·PUT /api/designers/me/alert-settings` | 디자이너 | 알림 조건 |
-| `GET·POST /api/internal/jobs/sweep` | `Bearer CRON_SECRET` | 배치: 만료 · 마감 D-1 알림 · 고아 업로드 삭제 |
+| `GET·PUT /api/me/hair-profile` | 로그인 | 서버 모발 프로필 (완료 확인 때 자동 갱신) |
+| `GET /api/designers/:id` · `/portfolio` · `/reviews` | 로그인 | 디자이너 프로필 · 포트폴리오(`?source=&similarToMe=true`) · 손님 후기 |
+| `GET /api/matches/:id` | 당사자 | 매칭 상세 (손님에게 모발 프로필 미리보기) |
+| `POST /api/matches/:id/complete` | 담당 디자이너 | 완료 요청 → 손님 확인 기한 +7일 |
+| `POST /api/matches/:id/confirm` · `/dispute` | 손님 | 완료 확인(모발 프로필 갱신·작업물) · [아니에요] |
+| `POST /api/matches/:id/reviews` | 당사자 | 후기 (완료 후 7일, 역할당 1회) → 온도 반영 |
+| `POST·GET /api/designers/verification` | 로그인 | 면허 인증 신청(202) · 상태 |
+| `PATCH /api/designers/me` | 디자이너 | 활동 지역 · 샵 · 예약 링크 · 인스타 |
+| `GET /api/designers/me/responses` | 디자이너 | `?tab=pending\|in_progress\|done` |
+| `GET /api/notifications` · `POST /api/notifications/read` | 로그인 | 알림 목록·안 읽은 수 · 읽음 처리 |
+| `GET·POST /api/internal/jobs/sweep` | `Bearer CRON_SECRET` | 배치: 만료 · 마감 D-1 알림 · 자동 완료 · 후기 리마인드 · 면허 결과 반영 · 고아 업로드 삭제 |
+
+### 면허 승인 (관리자 화면 없음)
+
+```sql
+-- 승인
+update designer_profiles set verify_status = 'verified', verified_at = now() where user_id = '<사용자 id>';
+-- 반려
+update designer_profiles set verify_status = 'rejected', reject_reason = '면허 사진이 흐려요', verified_at = now() where user_id = '<사용자 id>';
+```
+
+다음 배치 때 면허 사진이 삭제되고, 신청자에게 `verification_result` 알림이 갑니다.
+
+### 온도
+
+| 후기 | 반영 |
+|---|---|
+| 손님 → 디자이너 `satisfaction` | good +0.5 · ok 0 · bad −1.0 |
+| 디자이너 → 손님 `promiseKept` | yes +0.2 · partly 0 · no(노쇼) −1.0 |
+
+시작값은 36.5이고, 0~99.9 사이로 제한됩니다. 수치는 [src/services/matches.ts](src/services/matches.ts)의 `TEMPERATURE_DELTA`에 있습니다.
 
 ## 배포 (Vercel)
 

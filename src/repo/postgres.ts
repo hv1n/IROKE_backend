@@ -8,9 +8,11 @@ import type {
   HairProfileRow,
   MatchRow,
   NotificationRow,
+  PortfolioItemRow,
   Repo,
   RequestRow,
   ResponseRow,
+  ReviewRow,
   UserRow,
 } from './types';
 import { UniqueViolation } from './types';
@@ -41,7 +43,8 @@ function values(sql: AnySql, obj: Row): Row {
   const out: Row = {};
   for (const [k, v] of Object.entries(obj)) {
     if (v === undefined) continue;
-    out[k] = JSON_COLUMNS.has(k) && v !== null ? sql.json(v as never) : v;
+    // 이름이 같아도 테이블마다 타입이 다를 수 있다 (hair_profiles.source = jsonb, portfolio_items.source = text)
+    out[k] = JSON_COLUMNS.has(k) && v !== null && typeof v === 'object' && !(v instanceof Date) ? sql.json(v as never) : v;
   }
   return out;
 }
@@ -52,6 +55,9 @@ const toRequest = (r: Row) => r as unknown as RequestRow;
 const toResponse = (r: Row) => r as unknown as ResponseRow;
 const toMatch = (r: Row) => r as unknown as MatchRow;
 const toDesigner = (r: Row) => r as unknown as DesignerProfileRow;
+const toReview = (r: Row) => r as unknown as ReviewRow;
+const toPortfolio = (r: Row) => r as unknown as PortfolioItemRow;
+const toNotification = (r: Row) => r as unknown as NotificationRow;
 const toHair = (r: Row): HairProfileRow => ({ ...(r as unknown as HairProfileRow), damage: Number(r.damage), level: num(r.level) as number | null });
 
 async function unique<T>(fn: () => Promise<T>): Promise<T> {
@@ -93,6 +99,13 @@ function ops(sql: AnySql, inTx: boolean): Repo {
       if (Object.keys(v).length) await sql`update users set ${sql(v)} where id = ${id}`;
     },
 
+    async adjustTemperature(id, delta, min, max) {
+      const [r] = await sql`
+        update users set temperature = round(least(${max}::numeric, greatest(${min}::numeric, temperature + ${delta}::numeric)), 1)
+        where id = ${id} returning temperature`;
+      return Number(r?.temperature ?? 36.5);
+    },
+
     // designer_profiles
     async getDesignerProfile(userId) {
       const [r] = await sql`select * from designer_profiles where user_id = ${userId}`;
@@ -113,6 +126,11 @@ function ops(sql: AnySql, inTx: boolean): Repo {
     },
     async listDesignersInRegions(regions) {
       return (await sql`select * from designer_profiles where regions && ${regions}::text[]`).map(toDesigner);
+    },
+    async listDecidedWithLicenseImage(limit) {
+      return (
+        await sql`select * from designer_profiles where verify_status <> 'pending' and license_image_key is not null limit ${limit}`
+      ).map(toDesigner);
     },
 
     // hair_profiles
@@ -205,6 +223,9 @@ function ops(sql: AnySql, inTx: boolean): Repo {
       if (!requestIds.length) return [];
       return (await sql`select * from responses where designer_id = ${designerId} and request_id = any(${requestIds}::uuid[])`).map(toResponse);
     },
+    async listAllResponsesByDesigner(designerId) {
+      return (await sql`select * from responses where designer_id = ${designerId} order by created_at desc, id desc`).map(toResponse);
+    },
     async countResponses(requestIds) {
       const m = new Map(requestIds.map((id) => [id, 0]));
       if (!requestIds.length) return m;
@@ -259,6 +280,62 @@ function ops(sql: AnySql, inTx: boolean): Repo {
       return Boolean(r?.active);
     },
 
+    async listMatchesByResponses(responseIds) {
+      if (!responseIds.length) return [];
+      return (await sql`select * from matches where response_id = any(${responseIds}::uuid[])`).map(toMatch);
+    },
+    async listOverdueCompleteRequested(now, limit) {
+      return (
+        await sql`select * from matches where status = 'complete_requested' and confirm_deadline <= ${now} order by confirm_deadline limit ${limit}`
+      ).map(toMatch);
+    },
+    async listCompletedBetween(from, to) {
+      return (
+        await sql`
+          select * from matches
+          where status = 'completed' and coalesce(confirmed_at, confirm_deadline) >= ${from} and coalesce(confirmed_at, confirm_deadline) < ${to}`
+      ).map(toMatch);
+    },
+
+    // reviews
+    async insertReview(review) {
+      await unique(() => sql`insert into reviews ${sql(values(sql, { ...review }))}`);
+    },
+    async listReviewsByMatches(matchIds) {
+      if (!matchIds.length) return [];
+      return (await sql`select * from reviews where match_id = any(${matchIds}::uuid[])`).map(toReview);
+    },
+    async listReviewsForTarget(targetId, authorRole, page) {
+      return (
+        await sql`
+          select * from reviews where target_id = ${targetId} and author_role = ${authorRole}
+          order by created_at desc, id desc limit ${page.limit} offset ${page.offset}`
+      ).map(toReview);
+    },
+    async countReviewsForTarget(targetId, authorRole) {
+      const [r] = await sql`select count(*)::int as n from reviews where target_id = ${targetId} and author_role = ${authorRole}`;
+      return Number(r?.n ?? 0);
+    },
+
+    // portfolio_items
+    async insertPortfolioItem(item) {
+      await unique(() => sql`insert into portfolio_items ${sql(values(sql, { ...item }))}`);
+    },
+    async listPortfolio(designerId, opts, page) {
+      return (
+        await sql`
+          select * from portfolio_items
+          where designer_id = ${designerId}
+          ${opts.source ? sql`and source = ${opts.source}` : sql``}
+          ${opts.requiredTags?.length ? sql`and hair_tags @> ${opts.requiredTags}::text[]` : sql``}
+          order by created_at desc, id desc limit ${page.limit} offset ${page.offset}`
+      ).map(toPortfolio);
+    },
+    async countPortfolio(designerId, source) {
+      const [r] = await sql`select count(*)::int as n from portfolio_items where designer_id = ${designerId} and source = ${source}`;
+      return Number(r?.n ?? 0);
+    },
+
     // notifications
     async insertNotifications(rows: NotificationRow[]) {
       if (!rows.length) return;
@@ -270,6 +347,22 @@ function ops(sql: AnySql, inTx: boolean): Repo {
           select 1 from notifications where user_id = ${userId} and type = ${type} and payload ->> ${refKey} = ${refValue}
         ) as found`;
       return Boolean(r?.found);
+    },
+    async listNotifications(userId, unreadOnly, page) {
+      return (
+        await sql`
+          select * from notifications where user_id = ${userId} ${unreadOnly ? sql`and read_at is null` : sql``}
+          order by created_at desc, id desc limit ${page.limit} offset ${page.offset}`
+      ).map(toNotification);
+    },
+    async countUnread(userId) {
+      const [r] = await sql`select count(*)::int as n from notifications where user_id = ${userId} and read_at is null`;
+      return Number(r?.n ?? 0);
+    },
+    async markNotificationsRead(userId, ids, now) {
+      await sql`
+        update notifications set read_at = ${now}
+        where user_id = ${userId} and read_at is null ${ids ? sql`and id = any(${ids}::uuid[])` : sql``}`;
     },
   };
   return repo;

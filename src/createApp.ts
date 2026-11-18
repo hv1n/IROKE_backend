@@ -13,6 +13,7 @@ import { creationRoutes } from './routes/creation';
 import { designerRoutes } from './routes/designer';
 import { devRoutes } from './routes/dev';
 import { internalRoutes } from './routes/internal';
+import { matchRoutes } from './routes/matches';
 import { requestRoutes } from './routes/requests';
 
 const CLIENT_ID = /^[0-9a-f-]{36}$/i;
@@ -51,6 +52,7 @@ export function createApp(overrides: Partial<AppDeps> = {}) {
   accountRoutes(app, deps);
   requestRoutes(app, deps);
   designerRoutes(app, deps);
+  matchRoutes(app, deps);
   internalRoutes(app, deps);
   if (deps.config.devRoutes) devRoutes(app, deps);
 

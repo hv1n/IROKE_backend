@@ -8,9 +8,11 @@ import type {
   MatchRow,
   NotificationRow,
   Page,
+  PortfolioItemRow,
   Repo,
   RequestRow,
   ResponseRow,
+  ReviewRow,
   UserRow,
 } from './types';
 import { UniqueViolation } from './types';
@@ -22,6 +24,8 @@ export interface MemoryState {
   requests: Map<string, RequestRow>;
   responses: Map<string, ResponseRow>;
   matches: Map<string, MatchRow>;
+  reviews: Map<string, ReviewRow>;
+  portfolioItems: Map<string, PortfolioItemRow>;
   notifications: Map<string, NotificationRow>;
 }
 
@@ -38,6 +42,8 @@ const emptyState = (): MemoryState => ({
   requests: new Map(),
   responses: new Map(),
   matches: new Map(),
+  reviews: new Map(),
+  portfolioItems: new Map(),
   notifications: new Map(),
 });
 
@@ -93,6 +99,14 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
         if (u) state.users.set(id, { ...u, ...clone(patch) });
       },
 
+      async adjustTemperature(id, delta, min, max) {
+        const u = state.users.get(id);
+        if (!u) return 36.5;
+        const next = Math.round(Math.min(max, Math.max(min, u.temperature + delta)) * 10) / 10;
+        state.users.set(id, { ...u, temperature: next });
+        return next;
+      },
+
       // designer_profiles
       async getDesignerProfile(userId) {
         return clone(state.designerProfiles.get(userId) ?? null);
@@ -109,6 +123,12 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
       },
       async listDesignersInRegions(regions) {
         return [...state.designerProfiles.values()].filter((p) => overlaps(p.regions, regions)).map(clone);
+      },
+      async listDecidedWithLicenseImage(limit) {
+        return [...state.designerProfiles.values()]
+          .filter((p) => p.verifyStatus !== 'pending' && p.licenseImageKey !== null)
+          .slice(0, limit)
+          .map(clone);
       },
 
       // hair_profiles
@@ -173,6 +193,7 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
         for (const r of state.requests.values()) if (r.designImageKey === key) return true;
         for (const m of state.matches.values()) if (m.designerResultKeys.includes(key) || m.customerResultKeys.includes(key)) return true;
         for (const p of state.designerProfiles.values()) if (p.licenseImageKey === key) return true;
+        for (const p of state.portfolioItems.values()) if (p.designKey === key || p.resultKey === key) return true;
         return false;
       },
 
@@ -193,6 +214,9 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
       },
       async listResponsesByDesigner(designerId, requestIds) {
         return [...state.responses.values()].filter((s) => s.designerId === designerId && requestIds.includes(s.requestId)).map(clone);
+      },
+      async listAllResponsesByDesigner(designerId) {
+        return [...state.responses.values()].filter((s) => s.designerId === designerId).sort(byCreatedDesc).map(clone);
       },
       async countResponses(requestIds) {
         const counts = countBy([...state.responses.values()].filter((s) => requestIds.includes(s.requestId)), (s) => s.requestId);
@@ -244,6 +268,64 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
         return false;
       },
 
+      async listMatchesByResponses(responseIds) {
+        return [...state.matches.values()].filter((m) => responseIds.includes(m.responseId)).map(clone);
+      },
+      async listOverdueCompleteRequested(now, limit) {
+        return [...state.matches.values()]
+          .filter((m) => m.status === 'complete_requested' && m.confirmDeadline !== null && m.confirmDeadline <= now)
+          .slice(0, limit)
+          .map(clone);
+      },
+      async listCompletedBetween(from, to) {
+        return [...state.matches.values()]
+          .filter((m) => {
+            const at = m.confirmedAt ?? m.confirmDeadline;
+            return m.status === 'completed' && at !== null && at >= from && at < to;
+          })
+          .map(clone);
+      },
+
+      // reviews
+      async insertReview(review) {
+        for (const r of state.reviews.values()) {
+          if (r.matchId === review.matchId && r.authorRole === review.authorRole) throw new UniqueViolation('reviews_match_id_author_role_key');
+        }
+        state.reviews.set(review.id, clone(review));
+      },
+      async listReviewsByMatches(matchIds) {
+        return [...state.reviews.values()].filter((r) => matchIds.includes(r.matchId)).map(clone);
+      },
+      async listReviewsForTarget(targetId, authorRole, page) {
+        const rows = [...state.reviews.values()].filter((r) => r.targetId === targetId && r.authorRole === authorRole).sort(byCreatedDesc);
+        return paginate(rows, page).map(clone);
+      },
+      async countReviewsForTarget(targetId, authorRole) {
+        return [...state.reviews.values()].filter((r) => r.targetId === targetId && r.authorRole === authorRole).length;
+      },
+
+      // portfolio_items
+      async insertPortfolioItem(item) {
+        if (item.matchId) {
+          for (const p of state.portfolioItems.values()) if (p.matchId === item.matchId) throw new UniqueViolation('portfolio_items_match_id_key');
+        }
+        state.portfolioItems.set(item.id, clone(item));
+      },
+      async listPortfolio(designerId, opts, page) {
+        const rows = [...state.portfolioItems.values()]
+          .filter(
+            (p) =>
+              p.designerId === designerId &&
+              (!opts.source || p.source === opts.source) &&
+              (opts.requiredTags ?? []).every((t) => p.hairTags.includes(t)),
+          )
+          .sort(byCreatedDesc);
+        return paginate(rows, page).map(clone);
+      },
+      async countPortfolio(designerId, source) {
+        return [...state.portfolioItems.values()].filter((p) => p.designerId === designerId && p.source === source).length;
+      },
+
       // notifications
       async insertNotifications(rows) {
         for (const n of rows) state.notifications.set(n.id, clone(n));
@@ -253,6 +335,18 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
           if (n.userId === userId && n.type === type && n.payload[refKey] === refValue) return true;
         }
         return false;
+      },
+      async listNotifications(userId, unreadOnly, page) {
+        const rows = [...state.notifications.values()].filter((n) => n.userId === userId && (!unreadOnly || n.readAt === null)).sort(byCreatedDesc);
+        return paginate(rows, page).map(clone);
+      },
+      async countUnread(userId) {
+        return [...state.notifications.values()].filter((n) => n.userId === userId && n.readAt === null).length;
+      },
+      async markNotificationsRead(userId, ids, now) {
+        for (const n of state.notifications.values()) {
+          if (n.userId === userId && n.readAt === null && (ids === null || ids.includes(n.id))) state.notifications.set(n.id, { ...n, readAt: now });
+        }
       },
     };
     return repo;

@@ -1,14 +1,17 @@
 // 인증 · 계정 · 업로드 (A-01, 공통)
 import type { Hono } from 'hono';
-import type { LoginResponse, Me, UploadResponse } from '../shared';
+import type { HairProfileResponse, LoginResponse, Me, NotificationsResponse, UploadResponse } from '../shared';
 import type { AppDeps } from '../deps';
 import { KakaoAuthError } from '../auth/kakao';
 import { type AppEnv, readJson } from '../http/context';
 import { ApiFail, badRequest, unauthorized } from '../http/errors';
 import { requireUser } from '../http/middleware';
+import { readPage } from '../http/page';
 import { FieldErrors, isObj, text } from '../http/validate';
 import { logEvent } from '../lib/log';
 import { getMe, loginWithKakaoUser } from '../services/account';
+import { getHairProfile, putHairProfile } from '../services/hairProfile';
+import { listNotifications, readNotifications } from '../services/notifications';
 import { createUpload } from '../services/uploads';
 
 export function accountRoutes(app: Hono<AppEnv>, d: AppDeps) {
@@ -40,4 +43,20 @@ export function accountRoutes(app: Hono<AppEnv>, d: AppDeps) {
 
   /** 서명 업로드 URL 발급 */
   app.post('/uploads', user, async (c) => c.json<UploadResponse>(await createUpload(d, c.get('userId'), await readJson(c)), 201));
+
+  /** 서버 모발 프로필. 없으면 404 */
+  app.get('/me/hair-profile', user, async (c) => c.json<HairProfileResponse>(await getHairProfile(d, c.get('userId'))));
+  app.put('/me/hair-profile', user, async (c) => c.json<HairProfileResponse>(await putHairProfile(d, c.get('userId'), await readJson(c))));
+
+  /** 알림 (X-01) */
+  app.get('/notifications', user, async (c) => {
+    const e = new FieldErrors();
+    const page = readPage(c, e);
+    e.throwIfAny();
+    return c.json<NotificationsResponse>(await listNotifications(d, c.get('userId'), c.req.query('unreadOnly'), page));
+  });
+  app.post('/notifications/read', user, async (c) => {
+    await readNotifications(d, c.get('userId'), (await readJson(c)) ?? {});
+    return c.body(null, 204);
+  });
 }

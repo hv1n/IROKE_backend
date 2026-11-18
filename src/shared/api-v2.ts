@@ -310,6 +310,197 @@ export interface AlertSettings {
   budgets: Budget[];
 }
 
+// ── 디자이너 프로필 (C-04) ──────────────────────────────────
+
+/** GET /api/designers/:id */
+export interface DesignerPublicProfile {
+  id: string;
+  nickname: string;
+  verified: boolean;
+  shopName: string | null;
+  area: string;
+  instagram: string | null;
+  temperature: number;
+  /** 손님이 쓴 후기 수 */
+  reviewCount: number;
+  /** 완료된 매칭 수 (사진 비공개·자동 완료 포함 → 포트폴리오 인증 작업물 수보다 클 수 있음) */
+  verifiedWorkCount: number;
+  manualWorkCount: number;
+}
+
+export type PortfolioSource = 'verified' | 'manual';
+
+/** GET /api/designers/:id/portfolio 항목 */
+export interface PortfolioItem {
+  id: string;
+  source: PortfolioSource;
+  styleTag: string | null;
+  treatmentType: TreatmentType | null;
+  /** 시술 전 모발 정보 (사진 아님, 인증 작업물만). 클라이언트가 카드로 그린다 */
+  beforeCard: HairProfile | null;
+  designImageUrl: string | null;
+  resultImageUrl: string | null;
+  hairTags: string[];
+  completedAt: IsoDateTime;
+}
+
+export type ReviewManner = 'bad' | 'ok' | 'good';
+export type PromiseKept = 'yes' | 'partly' | 'no';
+export type Satisfaction = 'good' | 'ok' | 'bad';
+
+/** GET /api/designers/:id/reviews 항목 (손님이 쓴 후기만) */
+export interface DesignerReview {
+  manner: ReviewManner | null;
+  promiseKept: PromiseKept | null;
+  satisfaction: Satisfaction;
+  text: string | null;
+  createdAt: IsoDateTime;
+}
+
+// ── 매칭 · 완료 · 후기 (C-06·C-07·D-04) ─────────────────────
+
+/** GET /api/matches/:id (당사자). 예약 링크·연락처 없음 */
+export interface MatchDetail {
+  id: string;
+  status: MatchStatus;
+  /** 토큰으로 판단한 내 역할 */
+  myRole: 'customer' | 'designer';
+  request: {
+    id: string;
+    styleTag: string;
+    treatmentType: TreatmentType;
+    difficulty: Difficulty;
+    card: RequestCard;
+    /** 손님 본인에게는 늘, 디자이너에게는 비공개 처리 전까지 */
+    designImageUrl: string | null;
+  };
+  response: MyResponse;
+  designer: { id: string; nickname: string; shopName: string | null; area: string; temperature: number };
+  customer: { id: string; nickname: string; temperature: number };
+  acceptedAt: IsoDateTime;
+  completeRequestedAt: IsoDateTime | null;
+  confirmDeadline: IsoDateTime | null;
+  autoCompleted: boolean;
+  designerResultImageUrls: string[];
+  customerResultImageUrls: string[];
+  /** 완료 확인 때 바뀔 모발 프로필 미리보기 (손님에게만, 디자이너는 null) */
+  profilePreview: { before: HairProfile; after: HairProfile; changes: string[] } | null;
+  myReviewWritten: boolean;
+  /** 후기 기한 (완료 후 7일). 완료 전이면 null */
+  reviewDeadline: IsoDateTime | null;
+}
+
+/** POST /api/matches/:id/complete (디자이너) */
+export interface CompleteMatchBody {
+  /** POST /uploads(purpose: 'result') key, 최대 2장 */
+  resultImageKeys?: string[];
+}
+
+export interface CompleteMatchResponse {
+  status: 'complete_requested';
+  confirmDeadline: IsoDateTime;
+}
+
+/** POST /api/matches/:id/confirm (손님) */
+export interface ConfirmMatchBody {
+  /** 정면, 옆·뒤 최대 2장 */
+  resultImageKeys?: string[];
+  portfolioConsent: boolean;
+}
+
+export interface ConfirmMatchResponse {
+  status: 'completed';
+  /** 갱신된 내 모발 프로필 */
+  hairProfile: HairProfile;
+}
+
+/** POST /api/matches/:id/dispute (손님, [아니에요]) */
+export interface DisputeMatchBody {
+  reason: 'not_done' | 'different';
+  note?: string;
+}
+
+/** POST /api/matches/:id/reviews — 손님 → 디자이너 */
+export interface CustomerReviewBody {
+  satisfaction: Satisfaction;
+  manner?: ReviewManner;
+  promiseKept?: PromiseKept;
+  /** 100자 이하 */
+  text?: string;
+}
+
+/** POST /api/matches/:id/reviews — 디자이너 → 손님 ('no' = 노쇼) */
+export interface DesignerReviewBody {
+  promiseKept: PromiseKept;
+}
+
+export interface CreateReviewResponse {
+  reviewId: string;
+  targetTemperature: number;
+}
+
+// ── 디자이너 가입 · 면허 인증 · 정보 (D-01) ──────────────────
+
+/** POST /api/designers/verification. name·licenseNumber는 확인에만 쓰고 저장하지 않는다 */
+export interface VerificationRequest {
+  licenseImageKey: string;
+  name: string;
+  licenseNumber: string;
+  regions: string[];
+  shopName: string;
+  /** https만 */
+  bookingUrl: string;
+  instagram?: string | null;
+}
+
+/** GET /api/designers/verification */
+export interface VerificationStatus {
+  verifyStatus: VerifyStatus;
+  rejectReason: string | null;
+  submittedAt: IsoDateTime | null;
+  decidedAt: IsoDateTime | null;
+}
+
+/** PATCH /api/designers/me */
+export interface UpdateDesignerBody {
+  regions?: string[];
+  shopName?: string;
+  bookingUrl?: string;
+  instagram?: string | null;
+}
+
+/** GET /api/designers/me/responses?tab= */
+export type DesignerResponseTab = 'pending' | 'in_progress' | 'done';
+
+export interface DesignerResponseItem {
+  response: MyResponse;
+  request: { id: string; styleTag: string; treatmentType: TreatmentType };
+  match: { id: string; status: MatchStatus; acceptedAt: IsoDateTime; confirmDeadline: IsoDateTime | null } | null;
+  canRequestComplete: boolean;
+  canReview: boolean;
+}
+
+// ── 알림 (X-01) ────────────────────────────────────────────
+
+export interface NotificationItem {
+  id: string;
+  type: NotificationType;
+  /** 대상 id·스타일명 등. 연락처·사진 없음 */
+  payload: Record<string, unknown>;
+  readAt: IsoDateTime | null;
+  createdAt: IsoDateTime;
+}
+
+/** GET /api/notifications?unreadOnly=true */
+export interface NotificationsResponse extends Paged<NotificationItem> {
+  unreadCount: number;
+}
+
+/** POST /api/notifications/read → 204. ids를 비우면 전체 읽음 */
+export interface ReadNotificationsBody {
+  ids?: string[];
+}
+
 // ── 내부 배치 ──────────────────────────────────────────────
 
 /** GET·POST /api/internal/jobs/sweep (Authorization: Bearer CRON_SECRET) */
@@ -318,5 +509,6 @@ export interface SweepResult {
   deadlineSoonNotified: number;
   autoCompletedMatches: number;
   reviewReminders: number;
+  verificationResults: number;
   orphanUploadsDeleted: number;
 }

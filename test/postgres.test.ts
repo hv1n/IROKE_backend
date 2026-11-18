@@ -146,4 +146,66 @@ describe('Postgres 구현체 (PGlite)', { timeout: 20_000 }, () => {
     expect(await repo.isImageKeyReferenced(used)).toBe(true);
     expect(await repo.isImageKeyReferenced('request_design/x/y')).toBe(false);
   });
+
+  it('P2: 완료 요청 → 확인(포트폴리오·모발 프로필) → 후기·온도 → 알림 · D-04 · 면허 결과 · 자동 완료 · 리마인드', async () => {
+    const t = pg();
+    const cron = { authorization: `Bearer ${CRON_SECRET}` };
+    const customer = await t.login(SEED_KAKAO_IDS.customer1);
+    const d1 = await t.login(SEED_KAKAO_IDS.designer1);
+    const id = (await t.createRequest(customer)).body.id;
+    const r1 = (await t.call('POST', `/requests/${id}/responses`, { token: d1, body: t.responseBody() })).body.id;
+    const matchId = (await t.call('POST', `/responses/${r1}/accept`, { token: customer })).body.matchId;
+    expect((await t.call('GET', '/designers/me/responses?tab=in_progress', { token: d1 })).body.items[0].canRequestComplete).toBe(true);
+
+    const dKey = await t.upload(d1, 'result');
+    expect((await t.call('POST', `/matches/${matchId}/complete`, { token: d1, body: { resultImageKeys: [dKey] } })).status).toBe(200);
+    const front = await t.upload(customer, 'result');
+    const confirm = await t.call('POST', `/matches/${matchId}/confirm`, { token: customer, body: { resultImageKeys: [front], portfolioConsent: true } });
+    expect(confirm.body.hairProfile.history.at(-1)).toEqual({ type: 'perm', date: '2026-11-18' });
+    expect((await sql`select updated_by, level from hair_profiles where user_id = ${SEED_IDS.customer1}`)[0]).toEqual({ updatedBy: 'match', level: 5 });
+    const detail = await t.call('GET', `/matches/${matchId}`, { token: customer });
+    expect(detail.body).toMatchObject({ status: 'completed', profilePreview: { changes: ['시술 이력에 펌(2026-11-18) 추가'] } });
+    expect(detail.body.customerResultImageUrls).toHaveLength(1);
+
+    const portfolio = await t.call('GET', `/designers/${SEED_IDS.designer1}/portfolio?similarToMe=true&source=verified`, { token: customer });
+    expect(portfolio.body.items).toHaveLength(1);
+    expect(portfolio.body.items[0].beforeCard).toMatchObject({ length: 'medium' });
+    expect(await repo.isImageKeyReferenced(front)).toBe(true);
+
+    expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: customer, body: { satisfaction: 'good', text: '좋아요' } })).body.targetTemperature).toBe(37.7);
+    expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: customer, body: { satisfaction: 'good' } })).body.code).toBe('already_responded');
+    expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: d1, body: { promiseKept: 'no' } })).body.targetTemperature).toBe(35.5);
+    expect((await t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: customer })).body).toMatchObject({ reviewCount: 1, verifiedWorkCount: 1, temperature: 37.7 });
+    expect((await t.call('GET', `/designers/${SEED_IDS.designer1}/reviews`, { token: customer })).body.items[0]).toMatchObject({ satisfaction: 'good', text: '좋아요' });
+    expect((await t.call('GET', '/designers/me/responses?tab=done', { token: d1 })).body.items[0]).toMatchObject({ canReview: false });
+
+    const notes = await t.call('GET', '/notifications?unreadOnly=true', { token: customer });
+    expect(notes.body.unreadCount).toBeGreaterThanOrEqual(2);
+    await t.call('POST', '/notifications/read', { token: customer, body: { ids: [notes.body.items[0].id] } });
+    expect((await t.call('GET', '/notifications', { token: customer })).body.unreadCount).toBe(notes.body.unreadCount - 1);
+    await t.call('POST', '/notifications/read', { token: customer });
+    expect((await t.call('GET', '/notifications', { token: customer })).body.unreadCount).toBe(0);
+
+    // 면허 신청 → DB에서 승인 → 배치가 사진 삭제·알림
+    const nd = await t.login('pg-new-designer');
+    const lic = await t.upload(nd, 'license');
+    const body = { licenseImageKey: lic, name: '홍길동', licenseNumber: '2024-1', regions: ['서울 동작구'], shopName: '샵', bookingUrl: 'https://example.com/b' };
+    expect((await t.call('POST', '/designers/verification', { token: nd, body })).status).toBe(202);
+    expect(JSON.stringify(await sql`select * from designer_profiles`)).not.toContain('2024-1');
+    await sql`update designer_profiles set verify_status = 'verified' where license_image_key = ${lic}`;
+    expect((await t.call('POST', '/internal/jobs/sweep', { headers: cron })).body.verificationResults).toBe(1);
+    expect((await t.call('GET', '/designers/verification', { token: nd })).body).toMatchObject({ verifyStatus: 'verified', decidedAt: expect.any(String) });
+
+    // 다른 매칭: 자동 완료 + 리마인드
+    const id2 = (await t.createRequest(customer)).body.id;
+    const r2 = (await t.call('POST', `/requests/${id2}/responses`, { token: d1, body: t.responseBody() })).body.id;
+    const m2 = (await t.call('POST', `/responses/${r2}/accept`, { token: customer })).body.matchId;
+    await t.call('POST', `/matches/${m2}/complete`, { token: d1 });
+    t.advance(7 * DAY);
+    expect((await t.call('POST', '/internal/jobs/sweep', { headers: cron })).body.autoCompletedMatches).toBe(1);
+    expect((await sql`select status, auto_completed from matches where id = ${m2}`)[0]).toEqual({ status: 'completed', autoCompleted: true });
+    t.advance(3 * DAY + 1000); // 완료(자동) 후 3일이 지난 뒤
+    expect((await t.call('POST', '/internal/jobs/sweep', { headers: cron })).body.reviewReminders).toBe(2);
+    expect((await t.call('POST', '/internal/jobs/sweep', { headers: cron })).body.reviewReminders).toBe(0);
+  });
 });

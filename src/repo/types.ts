@@ -13,7 +13,7 @@ import type {
   Timing,
   VerifyStatus,
 } from '../shared/api-v2';
-import type { AnalyzedField, HairDensity, HairLength, HairTexture, Treatment, TreatmentType } from '../shared/types';
+import type { AnalyzedField, HairDensity, HairLength, HairProfile, HairTexture, Treatment, TreatmentType } from '../shared/types';
 
 export interface UserRow {
   id: string;
@@ -106,6 +106,35 @@ export interface MatchRow {
   disputeReason: string | null;
 }
 
+export interface ReviewRow {
+  id: string;
+  matchId: string;
+  authorId: string;
+  targetId: string;
+  authorRole: 'customer' | 'designer';
+  manner: 'bad' | 'ok' | 'good' | null;
+  promiseKept: 'yes' | 'partly' | 'no' | null;
+  satisfaction: 'good' | 'ok' | 'bad' | null;
+  text: string | null;
+  createdAt: Date;
+}
+
+export interface PortfolioItemRow {
+  id: string;
+  designerId: string;
+  /** 인증 작업물만 */
+  matchId: string | null;
+  source: 'verified' | 'manual';
+  styleTag: string | null;
+  treatmentType: TreatmentType | null;
+  /** 인증 작업물의 시술 전 모발 정보 */
+  beforeCard: HairProfile | null;
+  designKey: string | null;
+  resultKey: string | null;
+  hairTags: string[];
+  createdAt: Date;
+}
+
 export interface NotificationRow {
   id: string;
   userId: string;
@@ -157,6 +186,8 @@ export interface Repo {
   getUserByKakaoId(kakaoId: string): Promise<UserRow | null>;
   insertUser(user: UserRow): Promise<void>;
   updateUser(id: string, patch: Partial<Pick<UserRow, 'nickname' | 'temperature'>>): Promise<void>;
+  /** 온도를 delta만큼 원자적으로 바꾸고 [min, max]로 자른 새 값을 돌려준다 (소수 첫째 자리) */
+  adjustTemperature(id: string, delta: number, min: number, max: number): Promise<number>;
 
   // designer_profiles
   getDesignerProfile(userId: string): Promise<DesignerProfileRow | null>;
@@ -165,6 +196,8 @@ export interface Repo {
   updateDesignerProfile(userId: string, patch: Partial<Omit<DesignerProfileRow, 'userId'>>): Promise<void>;
   /** 활동 지역이 겹치는 디자이너 (알림 대상 후보) */
   listDesignersInRegions(regions: string[]): Promise<DesignerProfileRow[]>;
+  /** 승인·반려가 났는데 면허 사진이 남아 있는 디자이너 (배치가 사진 삭제 + 결과 알림) */
+  listDecidedWithLicenseImage(limit: number): Promise<DesignerProfileRow[]>;
 
   // hair_profiles
   getHairProfile(userId: string): Promise<HairProfileRow | null>;
@@ -192,6 +225,8 @@ export interface Repo {
   getResponse(id: string): Promise<ResponseRow | null>;
   listResponsesByRequest(requestId: string): Promise<ResponseRow[]>;
   listResponsesByDesigner(designerId: string, requestIds: string[]): Promise<ResponseRow[]>;
+  /** 이 디자이너의 모든 응답 (최신순, D-04) */
+  listAllResponsesByDesigner(designerId: string): Promise<ResponseRow[]>;
   countResponses(requestIds: string[]): Promise<Map<string, number>>;
   updateResponse(id: string, patch: Partial<Pick<ResponseRow, 'status'>>): Promise<void>;
   /** 이 요청의 pending 응답을 status로 바꾸고 바뀐 행을 돌려준다 (exceptId 제외) */
@@ -206,9 +241,33 @@ export interface Repo {
   countCompletedMatches(designerIds: string[]): Promise<Map<string, number>>;
   /** 이 사용자가 당사자인 진행 중 매칭(accepted·complete_requested)이 있는지 */
   hasActiveMatch(userId: string): Promise<boolean>;
+  listMatchesByResponses(responseIds: string[]): Promise<MatchRow[]>;
+  /** complete_requested이고 confirm_deadline ≤ now (자동 완료 대상) */
+  listOverdueCompleteRequested(now: Date, limit: number): Promise<MatchRow[]>;
+  /** completed이고 완료 시각(confirmed_at, 자동 완료는 confirm_deadline)이 [from, to) 안 */
+  listCompletedBetween(from: Date, to: Date): Promise<MatchRow[]>;
+
+  // reviews
+  /** UNIQUE(match_id, author_role) 위반이면 UniqueViolation */
+  insertReview(review: ReviewRow): Promise<void>;
+  listReviewsByMatches(matchIds: string[]): Promise<ReviewRow[]>;
+  /** 이 사용자가 받은 후기 (작성자 역할 기준, 최신순) */
+  listReviewsForTarget(targetId: string, authorRole: ReviewRow['authorRole'], page: Page): Promise<ReviewRow[]>;
+  countReviewsForTarget(targetId: string, authorRole: ReviewRow['authorRole']): Promise<number>;
+
+  // portfolio_items
+  insertPortfolioItem(item: PortfolioItemRow): Promise<void>;
+  /** requiredTags가 있으면 hair_tags가 그 태그를 모두 포함하는 것만 (최신순) */
+  listPortfolio(designerId: string, opts: { source?: PortfolioItemRow['source']; requiredTags?: string[] }, page: Page): Promise<PortfolioItemRow[]>;
+  countPortfolio(designerId: string, source: PortfolioItemRow['source']): Promise<number>;
 
   // notifications
   insertNotifications(rows: NotificationRow[]): Promise<void>;
   /** 같은 사용자·유형·대상(payload[refKey] = refValue) 알림이 이미 있는지 (배치 중복 방지) */
   hasNotification(userId: string, type: NotificationType, refKey: string, refValue: string): Promise<boolean>;
+  /** 최신순 */
+  listNotifications(userId: string, unreadOnly: boolean, page: Page): Promise<NotificationRow[]>;
+  countUnread(userId: string): Promise<number>;
+  /** ids가 null이면 전체. 본인 알림만 바뀐다 */
+  markNotificationsRead(userId: string, ids: string[] | null, now: Date): Promise<void>;
 }
