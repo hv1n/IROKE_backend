@@ -1,4 +1,4 @@
-import type { HairProfile, ToneRange } from '../types';
+import type { HairProfile, ToneRange } from '../types.js';
 
 /** 임시 규칙 파라미터 */
 export const TONE_RULES = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseProfile, parseProfileSource, parseStyleSource, sanitizeStyleTag } from './validate';
+import { parseProfile, parseProfileSource, parseStyleSource, sanitizeStyleTag } from './validate.js';
 
 const profile = {
   length: 'medium',
@@ -70,7 +70,7 @@ describe('v2 비슷한 스타일', () => {
     expect(parseStyleSource({ chosen: 'custom', similarIndex: 1 })).toEqual({ chosen: 'custom' });
   });
   it('styleDescription은 따옴표·줄바꿈을 지우고 100자로 자른다', async () => {
-    const { sanitizeStyleDescription } = await import('./validate');
+    const { sanitizeStyleDescription } = await import('./validate.js');
     expect(sanitizeStyleDescription(' 끝을 "C자"로\n말아 넣은 펌 ')).toBe('끝을 C자 로 말아 넣은 펌');
     expect(sanitizeStyleDescription('가'.repeat(150))).toHaveLength(100);
     expect(sanitizeStyleDescription('  ')).toBeNull();

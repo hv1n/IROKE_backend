@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARD, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers';
+import { CARD, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 describe('POST /requests', () => {
   it('201: open, 마감 +7일, 시술 종류·난이도 산정 (mock 규칙), hairTags 저장', async () => {

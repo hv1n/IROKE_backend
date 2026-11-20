@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { issueToken } from '../src/auth/jwt';
-import { DAY, PNG_BYTES, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers';
+import { issueToken } from '../src/auth/jwt.js';
+import { DAY, PNG_BYTES, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 describe('POST /auth/kakao', () => {
   it('처음이면 users를 만들고 isNewUser, 두 번째는 같은 사용자', async () => {

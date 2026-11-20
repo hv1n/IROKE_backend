@@ -1,6 +1,6 @@
 // AI_MODE=mock 전용 고정 분석 결과. 확신도를 섞어 두어 "한 번 확인해 주세요" 표시를 확인할 수 있게 한다.
-import type { HairAnalysis, StyleAnalysis } from '../shared';
-import { mockDelay } from '../providers/mock';
+import type { HairAnalysis, StyleAnalysis } from '../shared/index.js';
+import { mockDelay } from '../providers/mock.js';
 
 export async function mockAnalyzeHair(): Promise<HairAnalysis> {
   const started = performance.now();

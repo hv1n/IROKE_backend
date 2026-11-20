@@ -1,8 +1,8 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { env } from '../src/env';
-import { CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers';
+import { env } from '../src/env.js';
+import { CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 const cron = { authorization: `Bearer ${CRON_SECRET}` };
 

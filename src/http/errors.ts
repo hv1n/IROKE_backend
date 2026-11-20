@@ -1,6 +1,6 @@
 import type { Context } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
-import type { ApiError, ApiErrorCode } from '../shared';
+import type { ApiError, ApiErrorCode } from '../shared/index.js';
 
 /** 에러 응답 { error, code, fields? } */
 export const fail = (c: Context, status: ContentfulStatusCode, code: ApiErrorCode, error: string, fields?: Record<string, string>) =>

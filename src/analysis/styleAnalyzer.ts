@@ -1,6 +1,6 @@
-import { SIMILAR_STYLE_MAX, type Confidence, type SimilarStyle, type StyleAnalysis, type StyleSuggestion } from '../shared';
-import { ProviderError, type ImageBlob } from '../providers/types';
-import { analyzeImageJson, parseJsonText } from './geminiJson';
+import { SIMILAR_STYLE_MAX, type Confidence, type SimilarStyle, type StyleAnalysis, type StyleSuggestion } from '../shared/index.js';
+import { ProviderError, type ImageBlob } from '../providers/types.js';
+import { analyzeImageJson, parseJsonText } from './geminiJson.js';
 
 export const STYLE_SUGGESTION_COUNT = 3;
 const CONFIDENCES: Confidence[] = ['high', 'medium', 'low'];

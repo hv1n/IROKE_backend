@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { MARKETPLACE_LIMITS, type BoardItem, type MyRequestItem, type MyResponse, type NotificationType, type RequestDetail } from '../shared';
-import { notFound } from '../http/errors';
-import type { MatchRow, Repo, RequestRow, ResponseRow } from '../repo/types';
+import { MARKETPLACE_LIMITS, type BoardItem, type MyRequestItem, type MyResponse, type NotificationType, type RequestDetail } from '../shared/index.js';
+import { notFound } from '../http/errors.js';
+import type { MatchRow, Repo, RequestRow, ResponseRow } from '../repo/types.js';
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const REQUEST_TTL_MS = MARKETPLACE_LIMITS.requestTtlDays * DAY_MS;

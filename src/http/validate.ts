@@ -1,6 +1,6 @@
 // v2 API 필드 검증. 규칙 위반은 422 validation_failed + fields(필드명 → 메시지)로 모아서 돌려준다.
-import { MARKETPLACE_LIMITS } from '../shared';
-import { ApiFail } from './errors';
+import { MARKETPLACE_LIMITS } from '../shared/index.js';
+import { ApiFail } from './errors.js';
 
 export const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 

@@ -1,10 +1,10 @@
 // 알림 (X-01): 목록 + 안 읽은 수, 읽음 처리 (본인 것만)
-import type { NotificationsResponse } from '../shared';
-import type { AppDeps } from '../deps';
-import { toPaged } from '../http/page';
-import { FieldErrors, isObj, optionalOneOf } from '../http/validate';
-import type { Page } from '../repo/types';
-import { iso } from './common';
+import type { NotificationsResponse } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { toPaged } from '../http/page.js';
+import { FieldErrors, isObj, optionalOneOf } from '../http/validate.js';
+import type { Page } from '../repo/types.js';
+import { iso } from './common.js';
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

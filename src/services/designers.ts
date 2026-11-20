@@ -10,16 +10,16 @@ import {
   type Paged,
   type PortfolioItem,
   type VerificationStatus,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { badRequest, invalidState, notFound } from '../http/errors';
-import { toPaged } from '../http/page';
-import { FieldErrors, httpsUrl, isObj, optionalOneOf, regions as parseRegions, text } from '../http/validate';
-import type { DesignerProfileRow, MatchRow, Page } from '../repo/types';
-import { REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse } from './common';
-import { DEFAULT_ALERT_SETTINGS, syncRequest } from './lifecycle';
-import { autoCompleteIfOverdue, completedAt } from './matches';
-import { checkUploadKey } from './uploads';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { badRequest, invalidState, notFound } from '../http/errors.js';
+import { toPaged } from '../http/page.js';
+import { FieldErrors, httpsUrl, isObj, optionalOneOf, regions as parseRegions, text } from '../http/validate.js';
+import type { DesignerProfileRow, MatchRow, Page } from '../repo/types.js';
+import { REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse } from './common.js';
+import { DEFAULT_ALERT_SETTINGS, syncRequest } from './lifecycle.js';
+import { autoCompleteIfOverdue, completedAt } from './matches.js';
+import { checkUploadKey } from './uploads.js';
 
 /** 라벨의 괄호 설명을 뗀 태그 (hairTags와 같은 형식) */
 const tag = (label: string) => label.replace(/\s*\(.*\)\s*$/, '');

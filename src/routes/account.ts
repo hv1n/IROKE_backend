@@ -1,18 +1,18 @@
 // 인증 · 계정 · 업로드 (A-01, 공통)
 import type { Hono } from 'hono';
-import type { HairProfileResponse, LoginResponse, Me, NotificationsResponse, UploadResponse } from '../shared';
-import type { AppDeps } from '../deps';
-import { KakaoAuthError } from '../auth/kakao';
-import { type AppEnv, readJson } from '../http/context';
-import { ApiFail, badRequest, unauthorized } from '../http/errors';
-import { requireUser } from '../http/middleware';
-import { readPage } from '../http/page';
-import { FieldErrors, isObj, text } from '../http/validate';
-import { logEvent } from '../lib/log';
-import { getMe, loginWithKakaoUser } from '../services/account';
-import { getHairProfile, putHairProfile } from '../services/hairProfile';
-import { listNotifications, readNotifications } from '../services/notifications';
-import { createUpload } from '../services/uploads';
+import type { HairProfileResponse, LoginResponse, Me, NotificationsResponse, UploadResponse } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { KakaoAuthError } from '../auth/kakao.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { ApiFail, badRequest, unauthorized } from '../http/errors.js';
+import { requireUser } from '../http/middleware.js';
+import { readPage } from '../http/page.js';
+import { FieldErrors, isObj, text } from '../http/validate.js';
+import { logEvent } from '../lib/log.js';
+import { getMe, loginWithKakaoUser } from '../services/account.js';
+import { getHairProfile, putHairProfile } from '../services/hairProfile.js';
+import { listNotifications, readNotifications } from '../services/notifications.js';
+import { createUpload } from '../services/uploads.js';
 
 export function accountRoutes(app: Hono<AppEnv>, d: AppDeps) {
   const user = requireUser(d);

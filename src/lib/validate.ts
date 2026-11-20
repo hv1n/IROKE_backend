@@ -1,5 +1,5 @@
 // 요청 본문 검증. 프롬프트는 이 값들로 서버에서 만들기 때문에 형식을 엄격하게 본다.
-import { SIMILAR_STYLE_MAX, type AnalyzedField, type HairProfile, type ProfileSource, type StyleSource, type Treatment } from '../shared';
+import { SIMILAR_STYLE_MAX, type AnalyzedField, type HairProfile, type ProfileSource, type StyleSource, type Treatment } from '../shared/index.js';
 
 const LENGTHS = ['short', 'bob', 'medium', 'long'];
 const TEXTURES = ['straight', 'wavy', 'curly'];

@@ -14,8 +14,8 @@ import type {
   ResponseRow,
   ReviewRow,
   UserRow,
-} from './types';
-import { UniqueViolation } from './types';
+} from './types.js';
+import { UniqueViolation } from './types.js';
 
 type AnySql = Sql | TransactionSql;
 type Row = Record<string, unknown>;

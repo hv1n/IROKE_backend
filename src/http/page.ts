@@ -1,9 +1,9 @@
 // 목록: ?cursor=&limit= (기본 20, 최대 50) → { items, nextCursor }
 // 커서는 불투명 문자열이다 (지금은 offset을 감싼 값).
 import type { Context } from 'hono';
-import { MARKETPLACE_LIMITS, type Paged } from '../shared';
-import type { Page } from '../repo/types';
-import { FieldErrors } from './validate';
+import { MARKETPLACE_LIMITS, type Paged } from '../shared/index.js';
+import type { Page } from '../repo/types.js';
+import { FieldErrors } from './validate.js';
 
 export function readPage(c: Context, e: FieldErrors): Page {
   const limitRaw = c.req.query('limit');

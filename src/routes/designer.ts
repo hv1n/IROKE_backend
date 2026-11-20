@@ -12,13 +12,13 @@ import type {
   Paged,
   PortfolioItem,
   VerificationStatus,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { type AppEnv, readJson } from '../http/context';
-import { requireDesigner, requireUser, requireVerified } from '../http/middleware';
-import { readPage } from '../http/page';
-import { FieldErrors } from '../http/validate';
-import { createResponse, getAlertSettings, getBoardDetail, listBoard, putAlertSettings } from '../services/board';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { requireDesigner, requireUser, requireVerified } from '../http/middleware.js';
+import { readPage } from '../http/page.js';
+import { FieldErrors } from '../http/validate.js';
+import { createResponse, getAlertSettings, getBoardDetail, listBoard, putAlertSettings } from '../services/board.js';
 import {
   getDesignerProfile,
   getVerification,
@@ -27,7 +27,7 @@ import {
   listPortfolio,
   submitVerification,
   updateDesigner,
-} from '../services/designers';
+} from '../services/designers.js';
 
 export function designerRoutes(app: Hono<AppEnv>, d: AppDeps) {
   const user = requireUser(d);

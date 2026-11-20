@@ -1,4 +1,4 @@
-import type { ImageBlob } from '../providers/types';
+import type { ImageBlob } from '../providers/types.js';
 
 const ALLOWED_MIME = new Set(['image/png', 'image/jpeg', 'image/webp']);
 

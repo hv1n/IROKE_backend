@@ -2,7 +2,7 @@
 // 사진(data URL)은 절대 기록하지 않는다.
 import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { env } from '../env';
+import { env } from '../env.js';
 
 let ready: Promise<unknown> | undefined;
 

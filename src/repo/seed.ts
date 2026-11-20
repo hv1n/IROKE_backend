@@ -1,7 +1,7 @@
 // 시연용 시드: 인증 디자이너 2명 + 손님 1명. db/seed.sql과 같은 값이다 (둘을 함께 고칠 것).
 // memory 모드는 서버를 띄울 때 이 값으로 시작하고, 개발용 로그인(POST /api/auth/dev)에 kakaoId를 넣어 로그인한다.
-import type { AlertSettings } from '../shared';
-import type { MemorySeed } from './memory';
+import type { AlertSettings } from '../shared/index.js';
+import type { MemorySeed } from './memory.js';
 
 export const SEED_IDS = {
   designer1: 'a0000000-0000-4000-8000-000000000001',

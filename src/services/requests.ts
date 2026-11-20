@@ -18,17 +18,17 @@ import {
   type ResponseCard,
   type ResponseSort,
   type Timing,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { ApiFail, badRequest, forbidden, invalidState, notFound } from '../http/errors';
-import { toPaged } from '../http/page';
-import { FieldErrors, isObj, oneOf, optionalOneOf, regions as parseRegions, text } from '../http/validate';
-import { parseProfile, parseStyleSource, sanitizeStyleTag } from '../lib/validate';
-import type { Page, RequestRow } from '../repo/types';
-import { REQUEST_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, isOpen, myRequestItem, notify, requestDetail } from './common';
-import { hairTags } from './hairTags';
-import { expireIfOverdue, notifyMatchingDesigners, syncCustomerRequests, syncRequest } from './lifecycle';
-import { checkUploadKey } from './uploads';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { ApiFail, badRequest, forbidden, invalidState, notFound } from '../http/errors.js';
+import { toPaged } from '../http/page.js';
+import { FieldErrors, isObj, oneOf, optionalOneOf, regions as parseRegions, text } from '../http/validate.js';
+import { parseProfile, parseStyleSource, sanitizeStyleTag } from '../lib/validate.js';
+import type { Page, RequestRow } from '../repo/types.js';
+import { REQUEST_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, isOpen, myRequestItem, notify, requestDetail } from './common.js';
+import { hairTags } from './hairTags.js';
+import { expireIfOverdue, notifyMatchingDesigners, syncCustomerRequests, syncRequest } from './lifecycle.js';
+import { checkUploadKey } from './uploads.js';
 
 const FILTER_STATUSES: Record<MyRequestFilter, RequestStatus[]> = {
   open: ['open'],

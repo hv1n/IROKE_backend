@@ -1,9 +1,9 @@
-import type { HairAnalysis, StyleAnalysis } from '../shared';
-import { env } from '../env';
-import type { ImageBlob } from '../providers/types';
-import { analyzeHair } from './hairAnalyzer';
-import { mockAnalyzeHair, mockAnalyzeStyle } from './mock';
-import { analyzeStyle } from './styleAnalyzer';
+import type { HairAnalysis, StyleAnalysis } from '../shared/index.js';
+import { env } from '../env.js';
+import type { ImageBlob } from '../providers/types.js';
+import { analyzeHair } from './hairAnalyzer.js';
+import { mockAnalyzeHair, mockAnalyzeStyle } from './mock.js';
+import { analyzeStyle } from './styleAnalyzer.js';
 
 /** AI_MODE에 맞는 분석기 */
 export const analyzers: {

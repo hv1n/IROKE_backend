@@ -1,12 +1,12 @@
 // 서버 모발 프로필 (GET·PUT /me/hair-profile)과 시술 완료 확인 때의 자동 갱신.
 // 실제 결과(기장·밝기)는 서버가 알 수 없으므로, 완료 확인 때는 시술 이력에 {시술 종류, 확인 날짜}만 더한다.
-import { TREATMENT_LABELS, type HairProfile, type HairProfileResponse, type TreatmentType } from '../shared';
-import type { AppDeps } from '../deps';
-import { badRequest, notFound } from '../http/errors';
-import { FieldErrors, isObj } from '../http/validate';
-import { parseProfile, parseProfileSource } from '../lib/validate';
-import type { HairProfileRow, RequestRow } from '../repo/types';
-import { iso } from './common';
+import { TREATMENT_LABELS, type HairProfile, type HairProfileResponse, type TreatmentType } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { badRequest, notFound } from '../http/errors.js';
+import { FieldErrors, isObj } from '../http/validate.js';
+import { parseProfile, parseProfileSource } from '../lib/validate.js';
+import type { HairProfileRow, RequestRow } from '../repo/types.js';
+import { iso } from './common.js';
 
 const MAX_HISTORY = 20;
 const KST_OFFSET_MS = 9 * 60 * 60 * 1000;

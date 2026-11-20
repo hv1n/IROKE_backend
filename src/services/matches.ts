@@ -8,14 +8,14 @@ import type {
   MatchDetail,
   PromiseKept,
   Satisfaction,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { alreadyResponded, badRequest, forbidden, invalidState, notFound } from '../http/errors';
-import { FieldErrors, isObj, oneOf, text } from '../http/validate';
-import { UniqueViolation, type MatchRow, type Repo, type RequestRow } from '../repo/types';
-import { CONFIRM_TTL_MS, REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse, notify } from './common';
-import { applyTreatment, profileBefore, profileToRow } from './hairProfile';
-import { checkUploadKey } from './uploads';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { alreadyResponded, badRequest, forbidden, invalidState, notFound } from '../http/errors.js';
+import { FieldErrors, isObj, oneOf, text } from '../http/validate.js';
+import { UniqueViolation, type MatchRow, type Repo, type RequestRow } from '../repo/types.js';
+import { CONFIRM_TTL_MS, REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse, notify } from './common.js';
+import { applyTreatment, profileBefore, profileToRow } from './hairProfile.js';
+import { checkUploadKey } from './uploads.js';
 
 /** 온도 변화 (팀 결정 3): 디자이너 = 손님의 결과 만족도, 손님 = 디자이너가 남긴 약속 이행('no' = 노쇼) */
 export const TEMPERATURE_DELTA = {

@@ -1,6 +1,6 @@
-import type { HairProfile } from '../types';
-import type { PromptOptions } from './index';
-import { DENSITY_TEXT, TEXTURE_TEXT, colorKeepText, damageText, lengthRule, toneText } from './phrases';
+import type { HairProfile } from '../types.js';
+import type { PromptOptions } from './index.js';
+import { DENSITY_TEXT, TEXTURE_TEXT, colorKeepText, damageText, lengthRule, toneText } from './phrases.js';
 
 /** v1: 프로필 속성을 서술형으로 전달 */
 export function buildV1(profile: HairProfile, styleTag: string, options: PromptOptions): string[] {

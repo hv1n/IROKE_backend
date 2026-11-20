@@ -1,6 +1,6 @@
-import type { HairProfile, PromptVersion } from '../types';
-import { buildV1 } from './v1';
-import { buildV2 } from './v2';
+import type { HairProfile, PromptVersion } from '../types.js';
+import { buildV1 } from './v1.js';
+import { buildV2 } from './v2.js';
 
 /** 모든 버전에 반드시 들어가는 보존 지시 */
 export const PRESERVE_INSTRUCTION =

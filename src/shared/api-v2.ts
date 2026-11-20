@@ -1,6 +1,6 @@
 // v2 [디자이너 구하기] API 계약. 필드는 camelCase, 시간은 ISO 8601(UTC), 금액은 원 단위 정수.
 // 연락처(전화·이메일·카카오 ID)는 어떤 응답 타입에도 두지 않는다. 예약 링크는 수락 응답(AcceptResponseResult)에만 있다.
-import type { HairProfile, ProfileSource, StyleSource, TreatmentType } from './types';
+import type { HairProfile, ProfileSource, StyleSource, TreatmentType } from './types.js';
 
 export type IsoDateTime = string;
 

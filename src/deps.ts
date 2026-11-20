@@ -1,15 +1,15 @@
 // 앱이 쓰는 외부 의존성 묶음. 테스트는 createApp(overrides)로 시계·저장소·카카오를 바꿔 끼운다.
-import { geminiTreatmentEstimator } from './analysis/treatmentEstimator';
-import { createKakaoClient, type KakaoClient } from './auth/kakao';
-import { env } from './env';
-import { createMemoryRepo } from './repo/memory';
-import { createPostgresRepo, createSql } from './repo/postgres';
-import { SEED } from './repo/seed';
-import type { Repo } from './repo/types';
-import { ruleEstimator, type TreatmentEstimator } from './services/treatment';
-import { createMemoryStorage } from './storage/memory';
-import { createSupabaseStorage } from './storage/supabase';
-import type { ImageStorage } from './storage/types';
+import { geminiTreatmentEstimator } from './analysis/treatmentEstimator.js';
+import { createKakaoClient, type KakaoClient } from './auth/kakao.js';
+import { env } from './env.js';
+import { createMemoryRepo } from './repo/memory.js';
+import { createPostgresRepo, createSql } from './repo/postgres.js';
+import { SEED } from './repo/seed.js';
+import type { Repo } from './repo/types.js';
+import { ruleEstimator, type TreatmentEstimator } from './services/treatment.js';
+import { createMemoryStorage } from './storage/memory.js';
+import { createSupabaseStorage } from './storage/supabase.js';
+import type { ImageStorage } from './storage/types.js';
 
 export interface AppConfig {
   jwtSecret: string;

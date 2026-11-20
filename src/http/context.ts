@@ -1,5 +1,5 @@
 import type { Context } from 'hono';
-import type { DesignerProfileRow } from '../repo/types';
+import type { DesignerProfileRow } from '../repo/types.js';
 
 export type AppEnv = {
   Variables: {

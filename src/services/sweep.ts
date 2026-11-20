@@ -1,10 +1,10 @@
 // 배치 (Vercel Cron → GET /api/internal/jobs/sweep, 수동 실행은 POST).
 // API가 호출될 때마다 만료를 다시 확인하므로 배치가 늦어도 오동작은 없다. 여러 번 돌아도 결과가 같다(멱등).
-import type { SweepResult } from '../shared';
-import type { AppDeps } from '../deps';
-import { DAY_MS, ORPHAN_UPLOAD_MS, REVIEW_TTL_MS, notify } from './common';
-import { expireIfOverdue } from './lifecycle';
-import { autoCompleteIfOverdue } from './matches';
+import type { SweepResult } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { DAY_MS, ORPHAN_UPLOAD_MS, REVIEW_TTL_MS, notify } from './common.js';
+import { expireIfOverdue } from './lifecycle.js';
+import { autoCompleteIfOverdue } from './matches.js';
 
 /** 완료 후 이만큼 지나도 후기를 안 쓴 당사자에게 리마인드 1회 (후기 기한 7일 안) */
 export const REVIEW_REMINDER_AFTER_MS = 3 * DAY_MS;

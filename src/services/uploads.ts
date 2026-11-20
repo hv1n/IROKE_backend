@@ -1,11 +1,11 @@
 // POST /uploads: 서명 업로드 URL 발급. 클라이언트는 얼굴을 가린 사본만 PUT하고(MediaPipe, 브라우저에서),
 // 돌려받은 key만 다른 API에 넘긴다. 서버는 key가 본인 것인지·실제로 올라가 있는지 확인한다.
 import { randomUUID } from 'node:crypto';
-import { MARKETPLACE_LIMITS, UPLOAD_CONTENT_TYPES, UPLOAD_PURPOSES, type UploadPurpose, type UploadResponse } from '../shared';
-import type { AppDeps } from '../deps';
-import { forbidden, notVerified } from '../http/errors';
-import { FieldErrors, isObj, oneOf } from '../http/validate';
-import { iso } from './common';
+import { MARKETPLACE_LIMITS, UPLOAD_CONTENT_TYPES, UPLOAD_PURPOSES, type UploadPurpose, type UploadResponse } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { forbidden, notVerified } from '../http/errors.js';
+import { FieldErrors, isObj, oneOf } from '../http/validate.js';
+import { iso } from './common.js';
 
 const KEY = /^(request_design|result|license|portfolio)\/([0-9a-f-]{36})\/([0-9a-f-]{36})$/;
 

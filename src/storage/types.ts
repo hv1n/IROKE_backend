@@ -1,6 +1,6 @@
 // 비공개 이미지 저장소. 클라이언트는 서명 업로드 URL에 직접 PUT하고(Vercel 본문 4.5MB 제한 회피),
 // 보기는 10분짜리 서명 URL로만 한다. 버킷 자체는 비공개.
-import type { UploadContentType } from '../shared/api-v2';
+import type { UploadContentType } from '../shared/api-v2.js';
 
 export interface ImageStorage {
   readonly kind: 'memory' | 'supabase';

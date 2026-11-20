@@ -2,8 +2,8 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { env } from '../src/env';
-import { CRON_SECRET, DAY, SEED_KAKAO_IDS, setup } from './helpers';
+import { env } from '../src/env.js';
+import { CRON_SECRET, DAY, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 describe('개인정보 · 공개 범위', () => {
   it('어떤 응답에도 카카오 ID·이메일·전화번호가 없고, 예약 링크는 수락 응답에만 있다', async () => {

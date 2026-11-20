@@ -1,6 +1,6 @@
-import type { HairDensity, HairProfile, HairTexture } from '../types';
-import type { PromptOptions } from './index';
-import { buildV1 } from './v1';
+import type { HairDensity, HairProfile, HairTexture } from '../types.js';
+import type { PromptOptions } from './index.js';
+import { buildV1 } from './v1.js';
 
 /** v2: v1 + 조건별 시각 단서 보강. 평가자가 구분하기 어려웠던 조건을 강조한다. */
 const TEXTURE_CUES: Record<HairTexture, string> = {

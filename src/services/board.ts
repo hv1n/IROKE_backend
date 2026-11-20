@@ -10,14 +10,14 @@ import {
   type BoardDetail,
   type BoardItem,
   type Paged,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { alreadyResponded, badRequest, forbidden, notFound, requestClosed } from '../http/errors';
-import { toPaged } from '../http/page';
-import { FieldErrors, intIn, isObj, oneOf, optionalOneOf, text } from '../http/validate';
-import { UniqueViolation, type DesignerProfileRow, type Page } from '../repo/types';
-import { SIGNED_URL_TTL_SEC, assertUuid, boardItem, isOpen, myResponse, notify } from './common';
-import { DEFAULT_ALERT_SETTINGS, syncRequest } from './lifecycle';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { alreadyResponded, badRequest, forbidden, notFound, requestClosed } from '../http/errors.js';
+import { toPaged } from '../http/page.js';
+import { FieldErrors, intIn, isObj, oneOf, optionalOneOf, text } from '../http/validate.js';
+import { UniqueViolation, type DesignerProfileRow, type Page } from '../repo/types.js';
+import { SIGNED_URL_TTL_SEC, assertUuid, boardItem, isOpen, myResponse, notify } from './common.js';
+import { DEFAULT_ALERT_SETTINGS, syncRequest } from './lifecycle.js';
 
 /** 응답 가격 상한 (원) — 입력 실수 방지 */
 const PRICE_MAX = 10_000_000;

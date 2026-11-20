@@ -2,17 +2,17 @@
 // 기존 IROKE server/src/app.ts에서 옮긴 그대로 (v2 변경 1·2만 추가).
 import { randomUUID } from 'node:crypto';
 import type { Hono } from 'hono';
-import { SELFIE_INPUT, buildPrompt, type GenerationResponse, type StatusResponse } from '../shared';
-import { analyzers } from '../analysis';
-import { env } from '../env';
-import { type AppEnv, readJson } from '../http/context';
-import { fail } from '../http/errors';
-import { parseImageDataUrl, toDataUrl } from '../lib/dataUrl';
-import { createDailyLimiter } from '../lib/limit';
-import { logEvent } from '../lib/log';
-import { parseProfile, parseProfileSource, parseStyleSource, sanitizeStyleDescription, sanitizeStyleTag } from '../lib/validate';
-import { getImageProvider } from '../providers';
-import { ProviderError } from '../providers/types';
+import { SELFIE_INPUT, buildPrompt, type GenerationResponse, type StatusResponse } from '../shared/index.js';
+import { analyzers } from '../analysis/index.js';
+import { env } from '../env.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { fail } from '../http/errors.js';
+import { parseImageDataUrl, toDataUrl } from '../lib/dataUrl.js';
+import { createDailyLimiter } from '../lib/limit.js';
+import { logEvent } from '../lib/log.js';
+import { parseProfile, parseProfileSource, parseStyleSource, sanitizeStyleDescription, sanitizeStyleTag } from '../lib/validate.js';
+import { getImageProvider } from '../providers/index.js';
+import { ProviderError } from '../providers/types.js';
 
 export function creationRoutes(app: Hono<AppEnv>) {
   const limiter = createDailyLimiter(env.generationDailyLimit);

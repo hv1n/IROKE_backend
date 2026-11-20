@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DEFAULT_PROMPT_VERSION, type AiMode, type PromptVersion } from './shared';
+import { DEFAULT_PROMPT_VERSION, type AiMode, type PromptVersion } from './shared/index.js';
 
 const serverRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const list = (v: string | undefined, fallback: string[]) =>

@@ -1,11 +1,11 @@
 // AI_MODE=gemini: 요청 카드(스타일·모발 정보)로 시술 종류·난이도를 산정한다. 사진은 보내지 않는다.
 // 실패하면 요청 등록을 막지 않고 고정 규칙으로 대체한다.
-import { DAMAGE_LABELS, DENSITY_LABELS, LENGTH_LABELS, TEXTURE_LABELS, TREATMENT_LABELS, type RequestCard } from '../shared';
-import { env } from '../env';
-import { logEvent } from '../lib/log';
-import { ruleEstimate, type TreatmentEstimate, type TreatmentEstimator } from '../services/treatment';
-import { ProviderError } from '../providers/types';
-import { analyzeImageJson, parseJsonText } from './geminiJson';
+import { DAMAGE_LABELS, DENSITY_LABELS, LENGTH_LABELS, TEXTURE_LABELS, TREATMENT_LABELS, type RequestCard } from '../shared/index.js';
+import { env } from '../env.js';
+import { logEvent } from '../lib/log.js';
+import { ruleEstimate, type TreatmentEstimate, type TreatmentEstimator } from '../services/treatment.js';
+import { ProviderError } from '../providers/types.js';
+import { analyzeImageJson, parseJsonText } from './geminiJson.js';
 
 const TYPES = ['cut', 'perm', 'color', 'bleach'] as const;
 const LEVELS = ['low', 'medium', 'high'] as const;

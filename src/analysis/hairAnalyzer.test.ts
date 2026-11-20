@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { collectTexts } from '../providers/findImagePart';
-import { parseAnalysis } from './hairAnalyzer';
+import { collectTexts } from '../providers/findImagePart.js';
+import { parseAnalysis } from './hairAnalyzer.js';
 
 const valid = {
   length: { value: 'medium', confidence: 'high', reason: '어깨에 닿음' },
@@ -47,7 +47,7 @@ describe('collectTexts', () => {
 
 describe('parseStyleAnalysis', () => {
   it('중복·빈 태그 제거, 최대 3개, 잘못된 확신도는 low', async () => {
-    const { parseStyleAnalysis } = await import('./styleAnalyzer');
+    const { parseStyleAnalysis } = await import('./styleAnalyzer.js');
     const a = parseStyleAnalysis(
       JSON.stringify({
         suggestions: [
@@ -65,7 +65,7 @@ describe('parseStyleAnalysis', () => {
     expect(a.suggestions[1]!.confidence).toBe('low');
   });
   it('추천이 하나도 없으면 오류', async () => {
-    const { parseStyleAnalysis } = await import('./styleAnalyzer');
+    const { parseStyleAnalysis } = await import('./styleAnalyzer.js');
     expect(() => parseStyleAnalysis('{"suggestions":[]}', 'm')).toThrow();
   });
 });
@@ -77,7 +77,7 @@ describe('parseStyleAnalysis · 비슷한 스타일 (v2)', () => {
     { tag: '태슬컷', description: 'c', confidence: 'low' },
   ];
   it('추천과 같은 태그·중복·빈 항목을 빼고 최대 4개', async () => {
-    const { parseStyleAnalysis } = await import('./styleAnalyzer');
+    const { parseStyleAnalysis } = await import('./styleAnalyzer.js');
     const s = (tag: string) => ({ tag, description: `${tag} 설명`, diffFromReference: '다른 점' });
     const a = parseStyleAnalysis(
       JSON.stringify({ suggestions, similarStyles: [s('허쉬컷'), s('리프컷'), s('리프컷'), { tag: '', description: 'x' }, s('보브컷'), s('C컬펌 단발'), s('히피펌'), s('빌드펌')] }),
@@ -87,7 +87,7 @@ describe('parseStyleAnalysis · 비슷한 스타일 (v2)', () => {
     expect(a.similarStyles[0]).toEqual({ tag: '리프컷', description: '리프컷 설명', diffFromReference: '다른 점' });
   });
   it('없거나 형식이 틀리면 [] (추천은 그대로)', async () => {
-    const { parseStyleAnalysis } = await import('./styleAnalyzer');
+    const { parseStyleAnalysis } = await import('./styleAnalyzer.js');
     expect(parseStyleAnalysis(JSON.stringify({ suggestions }), 'm').similarStyles).toEqual([]);
     const a = parseStyleAnalysis(JSON.stringify({ suggestions, similarStyles: 'x' }), 'm');
     expect(a.similarStyles).toEqual([]);

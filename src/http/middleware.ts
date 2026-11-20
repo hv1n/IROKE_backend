@@ -1,10 +1,10 @@
 // 권한 미들웨어: 로그인 / 디자이너(면허 인증 신청자) / 인증 디자이너 / 배치 시크릿
 import { timingSafeEqual } from 'node:crypto';
 import { createMiddleware } from 'hono/factory';
-import type { AppDeps } from '../deps';
-import { readToken } from '../auth/jwt';
-import { forbidden, notVerified, unauthorized } from './errors';
-import type { AppEnv } from './context';
+import type { AppDeps } from '../deps.js';
+import { readToken } from '../auth/jwt.js';
+import { forbidden, notVerified, unauthorized } from './errors.js';
+import type { AppEnv } from './context.js';
 
 const BEARER = /^Bearer\s+(\S+)$/i;
 

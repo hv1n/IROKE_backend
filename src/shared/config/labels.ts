@@ -1,5 +1,5 @@
 // 화면 표시용 한국어 라벨 (본 서비스에서도 재사용)
-import type { Confidence, HairDensity, HairLength, HairTexture, TreatmentType } from '../types';
+import type { Confidence, HairDensity, HairLength, HairTexture, TreatmentType } from '../types.js';
 
 export const LENGTH_LABELS: Record<HairLength, string> = {
   short: '숏 (귀 위)',

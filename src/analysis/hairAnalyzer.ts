@@ -1,6 +1,6 @@
-import type { Confidence, FieldEstimate, HairAnalysis, HairDensity, HairLength, HairProfile, HairTexture } from '../shared';
-import { ProviderError, type ImageBlob } from '../providers/types';
-import { analyzeImageJson, parseJsonText } from './geminiJson';
+import type { Confidence, FieldEstimate, HairAnalysis, HairDensity, HairLength, HairProfile, HairTexture } from '../shared/index.js';
+import { ProviderError, type ImageBlob } from '../providers/types.js';
+import { analyzeImageJson, parseJsonText } from './geminiJson.js';
 
 const LENGTHS: HairLength[] = ['short', 'bob', 'medium', 'long'];
 const TEXTURES: HairTexture[] = ['straight', 'wavy', 'curly'];

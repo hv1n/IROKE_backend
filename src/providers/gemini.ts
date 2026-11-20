@@ -1,6 +1,6 @@
-import { env } from '../env';
-import { collectTexts, findImagePart } from './findImagePart';
-import { ProviderError, type GenerateInput, type GenerateOutput, type ImageProvider } from './types';
+import { env } from '../env.js';
+import { collectTexts, findImagePart } from './findImagePart.js';
+import { ProviderError, type GenerateInput, type GenerateOutput, type ImageProvider } from './types.js';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions';
 

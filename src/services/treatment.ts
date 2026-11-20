@@ -1,8 +1,8 @@
 // 시술 종류·난이도 산정. 손님이 고르지 않고 요청 등록 때 서버가 정한다.
 // AI_MODE=gemini: Gemini가 스타일·손상도·최근 약제 시술·밝기를 종합 (실패하면 아래 규칙으로 대체)
 // AI_MODE=mock: 아래 고정 규칙
-import { TREATMENT_LABELS, type Difficulty, type RequestCard, type TreatmentType } from '../shared';
-import { recentChemicals } from './hairTags';
+import { TREATMENT_LABELS, type Difficulty, type RequestCard, type TreatmentType } from '../shared/index.js';
+import { recentChemicals } from './hairTags.js';
 
 export interface TreatmentEstimate {
   treatmentType: TreatmentType;

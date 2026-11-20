@@ -1,8 +1,8 @@
 // Gemini 텍스트 모델에 (이미지 1장 +) 지시를 보내고 JSON 스키마로 답을 받는 공통 호출.
 // 과부하(429/5xx)면 1회 재시도 후 대체 모델로 넘어간다.
-import { env } from '../env';
-import { collectTexts } from '../providers/findImagePart';
-import { ProviderError, type ImageBlob } from '../providers/types';
+import { env } from '../env.js';
+import { collectTexts } from '../providers/findImagePart.js';
+import { ProviderError, type ImageBlob } from '../providers/types.js';
 
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions';
 const RETRYABLE = new Set([429, 500, 503]);

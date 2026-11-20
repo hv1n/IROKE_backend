@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findImagePart } from './findImagePart';
+import { findImagePart } from './findImagePart.js';
 
 describe('findImagePart', () => {
   it('Interactions API 형식', () => {

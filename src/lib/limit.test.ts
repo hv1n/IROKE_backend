@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDailyLimiter } from './limit';
+import { createDailyLimiter } from './limit.js';
 
 describe('createDailyLimiter', () => {
   it('limit이 null이면 제한 없음', () => {

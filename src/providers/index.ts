@@ -1,7 +1,7 @@
-import { env } from '../env';
-import { GeminiProvider } from './gemini';
-import { MockProvider } from './mock';
-import type { ImageProvider } from './types';
+import { env } from '../env.js';
+import { GeminiProvider } from './gemini.js';
+import { MockProvider } from './mock.js';
+import type { ImageProvider } from './types.js';
 
 // 새 후보는 ImageProvider를 구현해 여기에 추가한다.
 let provider: ImageProvider | undefined;
@@ -12,4 +12,4 @@ export function getImageProvider(): ImageProvider {
   return provider;
 }
 
-export type { ImageProvider } from './types';
+export type { ImageProvider } from './types.js';

@@ -3,7 +3,7 @@
 // (서명 업로드 URL 자체에는 크기 제한을 걸 수 없어서).
 import { createClient } from '@supabase/supabase-js';
 import type { Sql } from 'postgres';
-import type { ImageStorage } from './types';
+import type { ImageStorage } from './types.js';
 
 /** Supabase 서명 업로드 URL 유효 시간 (Supabase 고정값 2시간) */
 const SIGNED_UPLOAD_TTL_MS = 2 * 60 * 60 * 1000;

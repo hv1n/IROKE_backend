@@ -3,18 +3,18 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
-import { MAX_REQUEST_BODY_BYTES } from './shared';
-import { createDeps, type AppDeps } from './deps';
-import { env } from './env';
-import type { AppEnv } from './http/context';
-import { ApiFail, fail } from './http/errors';
-import { accountRoutes } from './routes/account';
-import { creationRoutes } from './routes/creation';
-import { designerRoutes } from './routes/designer';
-import { devRoutes } from './routes/dev';
-import { internalRoutes } from './routes/internal';
-import { matchRoutes } from './routes/matches';
-import { requestRoutes } from './routes/requests';
+import { MAX_REQUEST_BODY_BYTES } from './shared/index.js';
+import { createDeps, type AppDeps } from './deps.js';
+import { env } from './env.js';
+import type { AppEnv } from './http/context.js';
+import { ApiFail, fail } from './http/errors.js';
+import { accountRoutes } from './routes/account.js';
+import { creationRoutes } from './routes/creation.js';
+import { designerRoutes } from './routes/designer.js';
+import { devRoutes } from './routes/dev.js';
+import { internalRoutes } from './routes/internal.js';
+import { matchRoutes } from './routes/matches.js';
+import { requestRoutes } from './routes/requests.js';
 
 const CLIENT_ID = /^[0-9a-f-]{36}$/i;
 /** 메모리 저장소의 서명 업로드 경로 (사진 최대 5MB라 본문 한도에서 뺀다. dev 전용) */

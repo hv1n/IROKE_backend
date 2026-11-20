@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PRESERVE_INSTRUCTION, buildPrompt, getSafeToneRange, splitToneSteps, type HairProfile } from '../index';
+import { PRESERVE_INSTRUCTION, buildPrompt, getSafeToneRange, splitToneSteps, type HairProfile } from '../index.js';
 
 /** 테스트 고정 프로필 (원본은 실험용 BASE_PROFILE을 썼다) */
 const BASE_PROFILE: HairProfile = {

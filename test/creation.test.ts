@@ -2,8 +2,8 @@ import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { MAX_REQUEST_BODY_BYTES } from '../src/shared';
-import type { createApp as CreateApp } from '../src/createApp';
+import { MAX_REQUEST_BODY_BYTES } from '../src/shared/index.js';
+import type { createApp as CreateApp } from '../src/createApp.js';
 
 // env는 import 시점에 읽으므로 먼저 설정한다
 const logDir = mkdtempSync(path.join(tmpdir(), 'iroke-log-'));
@@ -11,7 +11,7 @@ Object.assign(process.env, { AI_MODE: 'mock', LOG_DIR: logDir, MOCK_DELAY_MIN_MS
 
 let app: ReturnType<typeof CreateApp>;
 beforeAll(async () => {
-  app = (await import('../src/createApp')).createApp();
+  app = (await import('../src/createApp.js')).createApp();
 });
 
 const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
@@ -94,7 +94,7 @@ describe('POST /api/generations · 비슷한 스타일 (v2)', () => {
   const similar = { ...noRef, styleTag: '리프컷', styleDescription: '얼굴선을 따라 층을 낸 컷', styleSource: { chosen: 'similar', similarIndex: 1 } };
 
   it('레퍼런스 없이 설명으로 생성하고, provider에는 레퍼런스·두 번째 이미지 지시를 넘기지 않는다', async () => {
-    const { getImageProvider } = await import('../src/providers');
+    const { getImageProvider } = await import('../src/providers/index.js');
     const spy = vi.spyOn(getImageProvider(), 'generate');
     const res = await post('/api/generations', { ...similar, reference: PNG });
     expect(res.status).toBe(200);

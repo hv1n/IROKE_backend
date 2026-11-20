@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CRON_SECRET, DAY, PNG_BYTES, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers';
+import { CRON_SECRET, DAY, PNG_BYTES, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 const auth = { authorization: `Bearer ${CRON_SECRET}` };
 

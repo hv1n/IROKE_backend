@@ -1,5 +1,5 @@
-import { env } from '../env';
-import type { GenerateInput, GenerateOutput, ImageProvider } from './types';
+import { env } from '../env.js';
+import type { GenerateInput, GenerateOutput, ImageProvider } from './types.js';
 
 /** 입력 셀카를 그대로 돌려주는 개발용 provider. API 비용 없이 플로우를 확인할 때 쓴다. */
 export class MockProvider implements ImageProvider {

@@ -1,13 +1,13 @@
 // v2 API 테스트 공통: 시계를 조작할 수 있는 memory 모드 앱 + 로그인·업로드·요청 생성 도우미.
 // 모든 응답 본문을 모아 두었다가(responses) 연락처·카카오 ID가 섞이지 않았는지 검사한다.
-import { KakaoAuthError, type KakaoClient } from '../src/auth/kakao';
-import { createApp } from '../src/createApp';
-import type { AppDeps } from '../src/deps';
-import { createMemoryRepo } from '../src/repo/memory';
-import { SEED, SEED_IDS, SEED_KAKAO_IDS } from '../src/repo/seed';
-import type { DesignerProfileRow } from '../src/repo/types';
-import { createMemoryStorage } from '../src/storage/memory';
-import type { HairProfile, RequestCard } from '../src/shared';
+import { KakaoAuthError, type KakaoClient } from '../src/auth/kakao.js';
+import { createApp } from '../src/createApp.js';
+import type { AppDeps } from '../src/deps.js';
+import { createMemoryRepo } from '../src/repo/memory.js';
+import { SEED, SEED_IDS, SEED_KAKAO_IDS } from '../src/repo/seed.js';
+import type { DesignerProfileRow } from '../src/repo/types.js';
+import { createMemoryStorage } from '../src/storage/memory.js';
+import type { HairProfile, RequestCard } from '../src/shared/index.js';
 
 export { SEED_IDS, SEED_KAKAO_IDS };
 

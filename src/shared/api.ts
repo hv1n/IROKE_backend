@@ -1,5 +1,5 @@
 // 클라이언트 ↔ 서버 API 계약. 필드는 camelCase.
-import type { HairProfile, ProfileSource, PromptVersion, StyleSource } from './types';
+import type { HairProfile, ProfileSource, PromptVersion, StyleSource } from './types.js';
 
 export type AiMode = 'mock' | 'gemini';
 

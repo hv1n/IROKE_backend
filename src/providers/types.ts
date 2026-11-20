@@ -1,4 +1,4 @@
-import type { AiMode } from '../shared';
+import type { AiMode } from '../shared/index.js';
 
 export interface ImageBlob {
   data: Buffer;

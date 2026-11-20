@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY, SEED_IDS, SEED_KAKAO_IDS, hasKeyDeep, setup } from './helpers';
+import { DAY, SEED_IDS, SEED_KAKAO_IDS, hasKeyDeep, setup } from './helpers.js';
 
 /** 손님 1명이 요청 1개를 올린 상태 */
 async function withRequest(over: Record<string, unknown> = {}) {
@@ -58,7 +58,7 @@ describe('GET /board', () => {
     const c = await t.login('c');
     const perm = (await t.createRequest(c)).body.id; // perm·high·5_10
     t.advance(1000);
-    const cut = (await t.createRequest(c, { card: { ...(await import('./helpers')).CARD, styleTag: '허쉬컷', profile: { ...(await import('./helpers')).PROFILE, history: [] } }, budget: null })).body.id; // cut·low·null
+    const cut = (await t.createRequest(c, { card: { ...(await import('./helpers.js')).CARD, styleTag: '허쉬컷', profile: { ...(await import('./helpers.js')).PROFILE, history: [] } }, budget: null })).body.id; // cut·low·null
     const d1 = await t.login(SEED_KAKAO_IDS.designer1);
     const ids = async (q: string) => (await t.call('GET', `/board${q}`, { token: d1 })).body.items.map((x: any) => x.id);
     expect(await ids('')).toEqual([cut, perm]);

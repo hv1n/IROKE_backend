@@ -9,13 +9,13 @@ import type {
   ReopenRequestResponse,
   RequestDetail,
   ResponseCard,
-} from '../shared';
-import type { AppDeps } from '../deps';
-import { type AppEnv, readJson } from '../http/context';
-import { badRequest } from '../http/errors';
-import { requireUser } from '../http/middleware';
-import { readPage } from '../http/page';
-import { FieldErrors } from '../http/validate';
+} from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { badRequest } from '../http/errors.js';
+import { requireUser } from '../http/middleware.js';
+import { readPage } from '../http/page.js';
+import { FieldErrors } from '../http/validate.js';
 import {
   acceptResponse,
   closeRequest,
@@ -25,7 +25,7 @@ import {
   listResponsesForCustomer,
   reopenRequest,
   updateRequest,
-} from '../services/requests';
+} from '../services/requests.js';
 
 export function requestRoutes(app: Hono<AppEnv>, d: AppDeps) {
   const user = requireUser(d);

@@ -1,9 +1,9 @@
 // 요청 상태 전이 중 여러 곳에서 쓰는 것: 만료, 알림 대상 디자이너 찾기.
 // 만료는 배치에만 기대지 않고 조회·쓰기 때마다 expires_at을 다시 확인한다 (syncRequest).
-import type { AlertSettings } from '../shared';
-import type { AppDeps } from '../deps';
-import type { DesignerProfileRow, Repo, RequestRow } from '../repo/types';
-import { notify } from './common';
+import type { AlertSettings } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import type { DesignerProfileRow, Repo, RequestRow } from '../repo/types.js';
+import { notify } from './common.js';
 
 export const DEFAULT_ALERT_SETTINGS: AlertSettings = { enabled: true, regions: [], treatmentTypes: [], difficulties: [], budgets: [] };
 

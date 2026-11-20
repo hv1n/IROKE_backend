@@ -2,13 +2,13 @@
 // - POST /api/auth/dev: 카카오 호출 없이 로그인 (시드 계정 kakaoId: seed-designer-1, seed-designer-2, seed-customer-1)
 // - PUT /api/dev/uploads, GET /api/dev/files: 메모리 저장소의 서명 업로드·보기 URL
 import type { Hono } from 'hono';
-import type { LoginResponse } from '../shared';
-import type { AppDeps } from '../deps';
-import { type AppEnv, readJson } from '../http/context';
-import { ApiFail, badRequest, notFound } from '../http/errors';
-import { FieldErrors, isObj, text } from '../http/validate';
-import { loginWithKakaoUser } from '../services/account';
-import type { MemoryStorage } from '../storage/memory';
+import type { LoginResponse } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { ApiFail, badRequest, notFound } from '../http/errors.js';
+import { FieldErrors, isObj, text } from '../http/validate.js';
+import { loginWithKakaoUser } from '../services/account.js';
+import type { MemoryStorage } from '../storage/memory.js';
 
 export function devRoutes(app: Hono<AppEnv>, d: AppDeps) {
   app.post('/auth/dev', async (c) => {

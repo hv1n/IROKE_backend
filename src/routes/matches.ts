@@ -1,10 +1,10 @@
 // 매칭 (C-06·C-07·D-04): 상세 · 완료 요청 · 완료 확인 · 이의 · 후기 (당사자만)
 import type { Hono } from 'hono';
-import type { CompleteMatchResponse, ConfirmMatchResponse, CreateReviewResponse, MatchDetail } from '../shared';
-import type { AppDeps } from '../deps';
-import { type AppEnv, readJson } from '../http/context';
-import { requireUser } from '../http/middleware';
-import { confirmComplete, createReview, disputeMatch, getMatchDetail, requestComplete } from '../services/matches';
+import type { CompleteMatchResponse, ConfirmMatchResponse, CreateReviewResponse, MatchDetail } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { type AppEnv, readJson } from '../http/context.js';
+import { requireUser } from '../http/middleware.js';
+import { confirmComplete, createReview, disputeMatch, getMatchDetail, requestComplete } from '../services/matches.js';
 
 export function matchRoutes(app: Hono<AppEnv>, d: AppDeps) {
   const user = requireUser(d);

@@ -5,9 +5,9 @@ import { PGlite } from '@electric-sql/pglite';
 import { PGLiteSocketServer } from '@electric-sql/pglite-socket';
 import type { Sql } from 'postgres';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { createPostgresRepo, createSql } from '../src/repo/postgres';
-import { UniqueViolation, type Repo } from '../src/repo/types';
-import { CARD, CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, T0, setup } from './helpers';
+import { createPostgresRepo, createSql } from '../src/repo/postgres.js';
+import { UniqueViolation, type Repo } from '../src/repo/types.js';
+import { CARD, CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, T0, setup } from './helpers.js';
 
 const migration = readFileSync(new URL('../db/migrations/001_v2.sql', import.meta.url), 'utf8');
 const seed = readFileSync(new URL('../db/seed.sql', import.meta.url), 'utf8');

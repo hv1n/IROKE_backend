@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers';
+import { CRON_SECRET, DAY, SEED_IDS, SEED_KAKAO_IDS, setup } from './helpers.js';
 
 const cron = { authorization: `Bearer ${CRON_SECRET}` };
 

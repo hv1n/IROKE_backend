@@ -1,10 +1,10 @@
 // 로그인(users upsert + 자체 JWT)과 내 정보. 연락처는 받지도 내보내지도 않는다.
 import { randomUUID } from 'node:crypto';
-import type { LoginResponse, Me } from '../shared';
-import type { AppDeps } from '../deps';
-import { issueToken } from '../auth/jwt';
-import { unauthorized } from '../http/errors';
-import { UniqueViolation, type UserRow } from '../repo/types';
+import type { LoginResponse, Me } from '../shared/index.js';
+import type { AppDeps } from '../deps.js';
+import { issueToken } from '../auth/jwt.js';
+import { unauthorized } from '../http/errors.js';
+import { UniqueViolation, type UserRow } from '../repo/types.js';
 
 export async function loginWithKakaoUser(d: AppDeps, kakao: { kakaoId: string; nickname: string }): Promise<LoginResponse> {
   const now = d.now();

@@ -2,8 +2,8 @@
 // 업로드: PUT {baseUrl}/api/dev/uploads?key=&exp=&sig=   보기: GET {baseUrl}/api/dev/files?key=&exp=&sig=
 // 서명은 HMAC-SHA256(secret, 용도|key|만료|제한). 이 경로는 memory 모드에서만 열린다(routes/dev.ts).
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { UploadContentType } from '../shared/api-v2';
-import type { ImageStorage } from './types';
+import type { UploadContentType } from '../shared/api-v2.js';
+import type { ImageStorage } from './types.js';
 
 interface StoredObject {
   data: Buffer;

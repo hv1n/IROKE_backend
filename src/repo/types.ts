@@ -12,8 +12,8 @@ import type {
   ResponseStatus,
   Timing,
   VerifyStatus,
-} from '../shared/api-v2';
-import type { AnalyzedField, HairDensity, HairLength, HairProfile, HairTexture, Treatment, TreatmentType } from '../shared/types';
+} from '../shared/api-v2.js';
+import type { AnalyzedField, HairDensity, HairLength, HairProfile, HairTexture, Treatment, TreatmentType } from '../shared/types.js';
 
 export interface UserRow {
   id: string;

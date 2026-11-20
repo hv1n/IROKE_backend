@@ -1,5 +1,5 @@
 // 게시판 표시·필터용 모발 태그: ['중단발', '반곱슬', '손상도 3', '최근 3개월 염색']
-import { LENGTH_LABELS, TEXTURE_LABELS, TREATMENT_LABELS, type HairProfile, type TreatmentType } from '../shared';
+import { LENGTH_LABELS, TEXTURE_LABELS, TREATMENT_LABELS, type HairProfile, type TreatmentType } from '../shared/index.js';
 
 /** "최근 약제 시술"로 보는 기간 */
 export const RECENT_CHEMICAL_DAYS = 90;

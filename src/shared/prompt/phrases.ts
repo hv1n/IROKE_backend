@@ -1,5 +1,5 @@
-import type { HairDensity, HairLength, HairProfile, HairTexture } from '../types';
-import { TONE_HUE, describeToneLevel } from '../config/tone';
+import type { HairDensity, HairLength, HairProfile, HairTexture } from '../types.js';
+import { TONE_HUE, describeToneLevel } from '../config/tone.js';
 
 export const LENGTH_TEXT: Record<HairLength, string> = {
   short: 'short, above the ears',
