@@ -39,9 +39,12 @@ export async function syncCustomerRequests(d: AppDeps, customerId: string) {
   for (const r of overdue) await d.repo.tx((repo) => expireIfOverdue(repo, r.id, now));
 }
 
-/** 이 디자이너의 알림 조건에 요청이 맞는지. 빈 배열 = 전부, regions는 활동 지역 안에서만 */
+/**
+ * 이 디자이너의 알림 조건에 요청이 맞는지. 빈 배열 = 전부, regions는 활동 지역 안에서만.
+ * 응답할 수 있는 인증 디자이너만 받는다 (인증 대기·반려는 게시판 목록만 볼 수 있음).
+ */
 export function matchesAlert(p: DesignerProfileRow, r: RequestRow): boolean {
-  if (p.verifyStatus === 'rejected') return false;
+  if (p.verifyStatus !== 'verified') return false;
   const s = p.alertSettings ?? DEFAULT_ALERT_SETTINGS;
   if (!s.enabled) return false;
   const regions = s.regions.length ? s.regions.filter((x) => p.regions.includes(x)) : p.regions;

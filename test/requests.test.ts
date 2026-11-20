@@ -74,6 +74,20 @@ describe('POST /requests', () => {
     expect(res.status).toBe(201);
   });
 
+  it('인증 대기·반려 디자이너는 조건이 맞아도 new_matching_request를 받지 않는다', async () => {
+    const t = setup();
+    const pending = await t.login('pending-designer');
+    await t.makeDesigner(pending, { verifyStatus: 'pending' });
+    const rejected = await t.login('rejected-designer');
+    await t.makeDesigner(rejected, { verifyStatus: 'rejected' });
+    const customer = await t.login(SEED_KAKAO_IDS.customer1);
+    expect((await t.createRequest(customer)).status).toBe(201);
+    const idOf = async (token: string) => (await t.call('GET', '/me', { token })).body.id;
+    expect(t.notificationsOf(await idOf(pending))).toHaveLength(0);
+    expect(t.notificationsOf(await idOf(rejected))).toHaveLength(0);
+    expect(t.notificationsOf(SEED_IDS.designer1)).toHaveLength(1); // 인증 디자이너는 받음
+  });
+
   it('로그인 없이는 401', async () => {
     expect((await setup().call('POST', '/requests', { body: {} })).status).toBe(401);
   });

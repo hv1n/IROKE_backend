@@ -1,6 +1,6 @@
 # IROKE v2 API 명세
 
-2026-11-18 기준 · 근거: 피그마 v2 (01 User Flow · 02 명세·화면 목록 · 03 Wireframes · 04 시스템 아키텍처), GitHub main `server/src/app.ts` · `shared/src/api.ts` · `shared/src/types.ts`
+2026-11-20 기준 (구현 반영) · 근거: 피그마 v2 (01 User Flow · 02 명세·화면 목록 · 03 Wireframes · 04 시스템 아키텍처), GitHub main `server/src/app.ts` · `shared/src/api.ts` · `shared/src/types.ts`
 
 ## 개요
 
@@ -21,7 +21,7 @@
 
 | 항목 | 규칙 |
 | --- | --- |
-| Base | `https://iroke.vercel.app/api` |
+| Base | `https://iroke-backend.vercel.app/api` (백엔드는 별도 Vercel 프로젝트라 프론트 주소 `https://iroke.vercel.app`과 다름) |
 | 비로그인 구분 | `x-iroke-client-id` 헤더 (기존 그대로, 시안 만들기 흐름 전용) |
 | 로그인 인증 | `Authorization: Bearer <accessToken>` (카카오 로그인 후 서버가 발급하는 JWT) |
 | 권한 표기 | 공개 / 로그인 / 손님 / 디자이너 / 인증 디자이너 / 당사자(해당 요청·매칭의 손님 또는 디자이너) |
@@ -57,6 +57,7 @@
 | 기존 | `PATCH /generations/:id` | 공개 | S-06 | 구현됨 |
 | 인증 | `POST /auth/kakao` | 공개 | A-01 | P1 |
 | 인증 | `POST /auth/logout` | 로그인 | A-01 | P1 |
+| 인증 | `POST /auth/dev` | 공개 (로컬 memory 모드 전용, production에서 닫힘) | — | 개발용 |
 | 계정 | `GET /me` | 로그인 | 공통 | P1 |
 | 계정 | `GET /me/hair-profile` · `PUT /me/hair-profile` | 로그인 | S-02·C-06 | P2 |
 | 업로드 | `POST /uploads` | 로그인 | C-01·C-06·D-01 | P1 |
@@ -87,14 +88,15 @@
 | 포트폴리오 | `POST /designers/me/portfolio` · `DELETE …/:itemId` | 인증 디자이너 | D-05 | 확장 |
 | 알림 | `GET /notifications` · `POST /notifications/read` | 로그인 | X-01 | P2 |
 | 신고 | `POST /reports` | 로그인 | X-02 | 확장 |
-| 내부 | `POST /internal/jobs/sweep` | Vercel Cron 시크릿 | — | P1 |
+| 내부 | `GET·POST /internal/jobs/sweep` | `Bearer CRON_SECRET` | — | P1 |
 
-`POST /internal/jobs/sweep`은 화면이 없는 배치입니다.
+`GET·POST /internal/jobs/sweep`은 화면이 없는 배치입니다.
 
 - 마감 지난 요청을 `expired`로 바꾸고 시안을 비공개 처리
 - 7일 지난 완료 요청을 자동 완료 처리
-- 마감 임박·후기 리마인드 알림 생성
-- API가 호출될 때마다 만료 여부를 다시 확인하므로 배치가 늦어도 오동작 없음
+- 마감 임박·후기 리마인드·면허 결과 알림 생성, 24시간 동안 쓰이지 않은 업로드 삭제
+- Vercel 무료 플랜 제한으로 **매일 03:00(KST)에 1회** 실행
+- 대신 요청 조회·응답·수락, 내 요청·진행 관리 조회 때 서버가 마감·자동 완료 시점을 직접 확인해 바로 반영하므로, 배치가 늦어도 화면에 보이는 상태는 정확함. 여러 번 돌아도 결과가 같음
 
 ## 시안 만들기 (기존 + v2 변경)
 
@@ -212,14 +214,14 @@ interface Me {
   difficultyReason: string }                               // Gemini 산정 근거 한 줄
 ```
 
-등록 직후 서버는 알림 조건이 맞는 디자이너에게만 `new_matching_request` 알림을 만듭니다.
+등록 직후 서버는 알림 조건이 맞는 **인증 디자이너**에게만 `new_matching_request` 알림을 만듭니다. 인증 대기·반려 디자이너는 받지 않습니다.
 
 ### 내 요청 관리 · C-02
 
 | API | 요청 | 응답 · 규칙 |
 | --- | --- | --- |
 | `GET /requests/mine` | `?status=open` / `matched` / `closed` | `{ items: [{ id, styleTag, designImageUrl, regions, timing, budget, status, expiresAt, responseCount }] }` |
-| `GET /requests/:id` | — | 위 항목 + `card`, `version`, `matchId?` |
+| `GET /requests/:id` | — | 위 항목 + `card`, `version`, `matchId`, `treatmentType`, `difficulty`, `difficultyReason` |
 | `PATCH /requests/:id` | `{ regions?, timing?, budget? }` | `open`일 때만. `version` +1 → 기존 응답은 “이전 조건” 표시 |
 | `POST /requests/:id/close` | — | → `cancelled`, 시안 즉시 비공개, 응답자에게 마감 알림 |
 | `POST /requests/:id/reopen` | `{ regions?, timing?, budget? }` | `expired`이고 응답 0개일 때만. → `open`, 마감 다시 +7일 ([조건 바꿔 다시 올리기] [지역 넓히기]) |
@@ -236,6 +238,7 @@ interface ResponseCard {
   comment: string;                       // ≤ 50자
   isOutdated: boolean;                   // 요청 수정 전 조건에 대한 응답
   status: 'pending' | 'accepted' | 'not_selected';
+  createdAt: string;
   designer: { id: string; nickname: string; shopName: string; area: string;
               temperature: number; verifiedWorkCount: number };
 }
@@ -266,7 +269,7 @@ interface ResponseCard {
 
 | API | 요청 | 응답 · 규칙 |
 | --- | --- | --- |
-| `GET /matches/:id` | — | `{ id, status, request, response, designer, completeRequestedAt, confirmDeadline, designerResultImageUrls, profilePreview: { before, after, changes: string[] }, myReviewWritten }` |
+| `GET /matches/:id` | — | `{ id, status, myRole, request, response, designer, customer, acceptedAt, completeRequestedAt, confirmDeadline, autoCompleted, designerResultImageUrls, customerResultImageUrls, profilePreview, myReviewWritten, reviewDeadline }`. `profilePreview { before, after, changes }`는 손님에게만, 디자이너는 `null` |
 | `POST /matches/:id/confirm` | `{ resultImageKeys?: string[] (≤2: 정면, 옆·뒤), portfolioConsent: boolean }` | `complete_requested`일 때만. → `completed`, 모발 프로필 갱신, 동의 시 인증 작업물 생성, 시안 비공개. 응답 `{ status, hairProfile }` |
 | `POST /matches/:id/dispute` | `{ reason: 'not_done' / 'different', note? }` | [아니에요] → `disputed`. 요청도 `cancelled`로 종료, 후기 불가 |
 
@@ -289,9 +292,11 @@ interface ResponseCard {
 
 매칭이 `completed`일 때만, 완료(자동 완료 포함) 후 7일 안에 역할당 1회입니다. 두 번째는 409 `already_responded`.
 
+온도 반영값: 손님 → 디자이너 `satisfaction`은 good +0.5 · ok 0 · bad −1.0, 디자이너 → 손님 `promiseKept`는 yes +0.2 · partly 0 · no(노쇼) −1.0입니다. 시작값 36.5이고 0~99.9로 제한합니다.
+
 ## 디자이너 · 알림 · 신고
 
-디자이너 API는 면허 인증을 신청해 `designer_profiles`가 있는 사용자만 통과하고, 응답·시안 열람은 `verifyStatus = verified`까지 확인합니다. 한 계정이 손님·디자이너를 겸할 수 있어서, 자기 요청에는 응답할 수 없습니다(403 `forbidden`). 미인증이어도 게시판 목록은 볼 수 있습니다.
+디자이너 API는 면허 인증을 신청해 `designer_profiles`가 있는 사용자만 통과하고, 응답·시안 열람은 `verifyStatus = verified`까지 확인합니다. 한 계정이 손님·디자이너를 겸할 수 있어서, 자기 요청에는 응답할 수 없습니다(403 `forbidden`). 인증 대기·반려 디자이너는 게시판 목록만 볼 수 있고, 새 요청 알림은 받지 않습니다.
 
 ### 가입 · 면허 인증 · D-01 (WF-D1)
 
@@ -307,8 +312,9 @@ interface ResponseCard {
 
 `GET /board?region=&treatment=&difficulty=&budget=&sort=newest|fewest_responses&cursor=`
 
-- `region`을 비우면 내 활동 지역 전체
-- `status = open`인 요청만 나옴
+- `region`을 비우면 내 활동 지역 전체, 활동 지역 밖의 값은 422
+- `budget` 필터는 예산 미정(디자이너 제안) 요청도 함께 보여줌
+- `status = open`이고 마감 전인 요청만 나옴
 
 ```ts
 interface BoardItem {         // 공개 필드만 — 이미지 URL 없음 (화면엔 “시안 인증 후”)
@@ -324,8 +330,8 @@ interface BoardItem {         // 공개 필드만 — 이미지 URL 없음 (화�
 
 | API | 요청 | 응답 · 규칙 |
 | --- | --- | --- |
-| `GET /board/:requestId` | — | `BoardItem` + `card { profile, requestText, riskWarnings }` + `designImageUrl` (인증 디자이너만, 나머지는 `null`) + `myResponse?` |
-| `POST /requests/:id/responses` | `{ availability: 'possible' / 'conditional', condition?, priceMin, priceMax, comment }` | 201 `{ id }`. `conditional`이면 `condition` 필수, `comment` ≤ 50자, `priceMin ≤ priceMax`. 프로필에 예약 링크 없으면 422. 403 `not_verified`, 409 `already_responded`, 410 `request_closed` |
+| `GET /board/:requestId` | — | `BoardItem` + `card { profile, requestText, riskWarnings }` + `status` + `designImageUrl` (인증 디자이너만, 나머지는 `null`) + `myResponse?`. 마감·취소·매칭된 요청은 응답했던 디자이너만 볼 수 있음 |
+| `POST /requests/:id/responses` | `{ availability: 'possible' / 'conditional', condition?, priceMin, priceMax, comment }` | 201 `{ id }`. `conditional`이면 `condition` 필수, `comment` ≤ 50자, `priceMin ≤ priceMax`. 프로필에 예약 링크 없으면 422 `validation_failed`(`fields.bookingUrl`). 403 `not_verified`, 409 `already_responded`, 410 `request_closed` |
 
 ### 알림 조건 · D-02
 
@@ -344,7 +350,7 @@ interface BoardItem {         // 공개 필드만 — 이미지 URL 없음 (화�
 | `GET /designers/me/responses` | `?tab=pending` / `in_progress` / `done` | `{ items: [{ response, request: { id, styleTag, treatmentType }, match?: { id, status, acceptedAt, confirmDeadline }, canRequestComplete, canReview }] }`. 미수락·마감은 `done`에 기록만 |
 | `POST /matches/:id/complete` | `{ resultImageKeys?: string[] }` | `accepted`일 때만. → `complete_requested`, `confirmDeadline` = +7일 (지나면 자동 completed), 손님에게 알림 |
 
-### 포트폴리오 직접 올리기 · D-05 (확장)
+### 포트폴리오 직접 올리기 · D-05 (확장, 아직 구현 안 함)
 
 - `POST /designers/me/portfolio` `{ resultImageKey, styleTag, treatmentType, hairTags (1개 이상 필수) }`
 - `DELETE /designers/me/portfolio/:itemId`
@@ -352,25 +358,25 @@ interface BoardItem {         // 공개 필드만 — 이미지 URL 없음 (화�
 
 ### 알림 · X-01
 
-- `GET /notifications?unreadOnly=true` → `{ items: [{ id, type, payload, readAt, createdAt }], unreadCount }`
-- `POST /notifications/read` `{ ids? }` (비우면 전체 읽음)
+- `GET /notifications?unreadOnly=true&cursor=` → `{ items: [{ id, type, payload, readAt, createdAt }], nextCursor, unreadCount }`
+- `POST /notifications/read` `{ ids? }` → 204 (비우면 전체 읽음)
 
 | type | 받는 사람 | 만드는 곳 |
 | --- | --- | --- |
-| `new_matching_request` | 디자이너 | `POST /requests` (알림 조건 일치만) |
+| `new_matching_request` | 디자이너 | `POST /requests` (인증 디자이너 + 알림 조건 일치만) |
 | `new_response` | 손님 | `POST /requests/:id/responses` |
 | `accepted` | 디자이너 | `POST /responses/:id/accept` |
 | `request_closed` | 디자이너 | 다른 응답 수락 · 요청 내림 · 마감 |
-| `deadline_soon` | 손님 | 배치 (마감 D-1) |
+| `deadline_soon` | 손님 | 배치 (마감 24시간 안으로 들어온 뒤 첫 배치, 1회) |
 | `complete_requested` | 손님 | `POST /matches/:id/complete` |
-| `review_reminder` | 양쪽 | 배치 ([나중에] 후 7일 안 1회) |
-| `verification_result` | 디자이너 | 면허 승인·반려 |
+| `review_reminder` | 양쪽 | 배치 (완료 후 3일이 지나도 후기를 안 쓴 쪽에 1회, 후기 기한 7일 안) |
+| `verification_result` | 디자이너 | 배치 (DB에서 승인·반려한 뒤 다음 배치 때. 면허 사진도 이때 삭제) |
 
-### 신고 · X-02 (확장)
+### 신고 · X-02 (확장, 아직 구현 안 함)
 
 `POST /reports` `{ targetType: 'response' | 'portfolio_item' | 'user', targetId, reason }` → 201
 
-## 팀 결정 사항 (11/18)
+## 팀 결정 사항 (11/18 · 11/20)
 
 | # | 항목 | 결정 | 반영한 곳 |
 | --- | --- | --- | --- |
@@ -384,3 +390,5 @@ interface BoardItem {         // 공개 필드만 — 이미지 URL 없음 (화�
 | 8 | 얼굴 가림 | 화면에서는 원본, 버킷에 올리는 사본만 가림. 디자이너도 가린 사본으로 봄 | `POST /uploads` (업로드 직전 MediaPipe) |
 | 9 | 지역 형식 | ‘서울 동작구’ 문자열 | requests·designer_profiles.regions |
 | 10 | 후기 기한 | 완료(자동 포함) 후 7일 | `POST /matches/:id/reviews` |
+| 11 | 배치 주기 | (11/20) 하루 1회(03:00 KST) 유지. 마감·자동 완료는 API가 조회 때 직접 확인해 바로 반영 | `vercel.json` crons, 배치 설명 |
+| 12 | 인증 대기 디자이너 | (11/20) 새 요청 알림을 받지 않음. 게시판 목록만 볼 수 있고 시안 열람·응답은 불가 | `new_matching_request` 대상, 디자이너 섹션 |
