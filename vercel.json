@@ -1,11 +1,19 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "hono",
+  "regions": [
+    "hnd1"
+  ],
   "installCommand": "npm ci --include=dev",
   "functions": {
-    "src/index.ts": { "maxDuration": 120 }
+    "src/index.ts": {
+      "maxDuration": 120
+    }
   },
   "crons": [
-    { "path": "/api/internal/jobs/sweep", "schedule": "0 18 * * *" }
+    {
+      "path": "/api/internal/jobs/sweep",
+      "schedule": "0 18 * * *"
+    }
   ]
 }
