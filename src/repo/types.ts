@@ -239,6 +239,11 @@ export interface Repo {
   updateMatch(id: string, patch: Partial<Omit<MatchRow, 'id' | 'requestId' | 'responseId' | 'customerId' | 'designerId'>>): Promise<void>;
   /** 디자이너별 완료 매칭 수 (verifiedWorkCount) */
   countCompletedMatches(designerIds: string[]): Promise<Map<string, number>>;
+  /**
+   * 디자이너별 이의 제기(disputed) 매칭 수, since 이후 완료 요청분만.
+   * 이의 제기는 완료 요청 뒤 7일 안에만 가능해서 완료 요청 시각으로 기간을 가른다 (별도 시각 컬럼 없음)
+   */
+  countRecentDisputes(designerIds: string[], since: Date): Promise<Map<string, number>>;
   /** 이 사용자가 당사자인 진행 중 매칭(accepted·complete_requested)이 있는지 */
   hasActiveMatch(userId: string): Promise<boolean>;
   listMatchesByResponses(responseIds: string[]): Promise<MatchRow[]>;

@@ -9,6 +9,9 @@ export const REQUEST_TTL_MS = MARKETPLACE_LIMITS.requestTtlDays * DAY_MS;
 export const CONFIRM_TTL_MS = 7 * DAY_MS;
 /** 후기 기한 (완료·자동 완료 후) */
 export const REVIEW_TTL_MS = 7 * DAY_MS;
+/** 다이아 등급 조건: 최근 90일 이의 제기 0건 */
+export const DISPUTE_WINDOW_MS = 90 * DAY_MS;
+export const disputeWindowStart = (now: Date) => new Date(now.getTime() - DISPUTE_WINDOW_MS);
 /** 어느 테이블에도 연결되지 않은 업로드를 지우는 기준 */
 export const ORPHAN_UPLOAD_MS = 24 * 60 * 60 * 1000;
 export const SIGNED_URL_TTL_SEC = MARKETPLACE_LIMITS.signedUrlTtlSec;

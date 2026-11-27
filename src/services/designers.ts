@@ -16,7 +16,7 @@ import { badRequest, invalidState, notFound } from '../http/errors.js';
 import { toPaged } from '../http/page.js';
 import { FieldErrors, httpsUrl, isObj, optionalOneOf, regions as parseRegions, text } from '../http/validate.js';
 import type { DesignerProfileRow, MatchRow, Page } from '../repo/types.js';
-import { REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse } from './common.js';
+import { REVIEW_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, myResponse, disputeWindowStart } from './common.js';
 import { DEFAULT_ALERT_SETTINGS, syncRequest } from './lifecycle.js';
 import { autoCompleteIfOverdue, completedAt } from './matches.js';
 import { checkUploadKey } from './uploads.js';
@@ -37,11 +37,12 @@ async function loadDesigner(d: AppDeps, id: string): Promise<DesignerProfileRow>
 
 export async function getDesignerProfile(d: AppDeps, id: string): Promise<DesignerPublicProfile> {
   const p = await loadDesigner(d, id);
-  const [user, reviewCount, works, manualWorkCount] = await Promise.all([
+  const [user, reviewCount, works, manualWorkCount, disputes] = await Promise.all([
     d.repo.getUser(p.userId),
     d.repo.countReviewsForTarget(p.userId, 'customer'),
     d.repo.countCompletedMatches([p.userId]),
     d.repo.countPortfolio(p.userId, 'manual'),
+    d.repo.countRecentDisputes([p.userId], disputeWindowStart(d.now())),
   ]);
   return {
     id: p.userId,
@@ -54,6 +55,7 @@ export async function getDesignerProfile(d: AppDeps, id: string): Promise<Design
     reviewCount,
     verifiedWorkCount: works.get(p.userId) ?? 0,
     manualWorkCount,
+    recentDisputes90d: disputes.get(p.userId) ?? 0,
   };
 }
 

@@ -122,6 +122,7 @@ describe('디자이너 프로필 · 포트폴리오 (C-04)', () => {
       reviewCount: 1,
       verifiedWorkCount: 1,
       manualWorkCount: 0,
+      recentDisputes90d: 0,
     });
     expect((await t.call('GET', `/designers/${SEED_IDS.customer1}`, { token: customer })).status).toBe(404);
     expect((await t.call('GET', `/designers/${SEED_IDS.designer1}`)).status).toBe(401);

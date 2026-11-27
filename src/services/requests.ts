@@ -25,7 +25,7 @@ import { toPaged } from '../http/page.js';
 import { FieldErrors, isObj, oneOf, optionalOneOf, regions as parseRegions, text } from '../http/validate.js';
 import { parseProfile, parseStyleSource, sanitizeStyleTag } from '../lib/validate.js';
 import type { Page, RequestRow } from '../repo/types.js';
-import { REQUEST_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, isOpen, myRequestItem, notify, requestDetail } from './common.js';
+import { REQUEST_TTL_MS, SIGNED_URL_TTL_SEC, assertUuid, iso, isOpen, myRequestItem, notify, requestDetail, disputeWindowStart } from './common.js';
 import { hairTags } from './hairTags.js';
 import { expireIfOverdue, notifyMatchingDesigners, syncCustomerRequests, syncRequest } from './lifecycle.js';
 import { checkUploadKey } from './uploads.js';
@@ -242,10 +242,11 @@ export async function listResponsesForCustomer(
   const r = await loadOwnRequest(d, userId, id);
   const responses = await d.repo.listResponsesByRequest(r.id);
   const designerIds = [...new Set(responses.map((s) => s.designerId))];
-  const [users, profiles, works] = await Promise.all([
+  const [users, profiles, works, disputes] = await Promise.all([
     d.repo.getUsers(designerIds),
     d.repo.getDesignerProfiles(designerIds),
     d.repo.countCompletedMatches(designerIds),
+    d.repo.countRecentDisputes(designerIds, disputeWindowStart(d.now())),
   ]);
   const userById = new Map(users.map((u) => [u.id, u]));
   const profileById = new Map(profiles.map((p) => [p.userId, p]));
@@ -269,6 +270,7 @@ export async function listResponsesForCustomer(
         area: (p?.regions ?? []).join(' · '),
         temperature: u?.temperature ?? 36.5,
         verifiedWorkCount: works.get(s.designerId) ?? 0,
+        recentDisputes90d: disputes.get(s.designerId) ?? 0,
       },
     };
   });

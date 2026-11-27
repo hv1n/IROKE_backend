@@ -240,7 +240,8 @@ interface ResponseCard {
   status: 'pending' | 'accepted' | 'not_selected';
   createdAt: string;
   designer: { id: string; nickname: string; shopName: string; area: string;
-              temperature: number; verifiedWorkCount: number };
+              temperature: number; verifiedWorkCount: number;
+              recentDisputes90d: number };   // 최근 90일 이의 제기 수 (다이아 등급 조건)
 }
 ```
 
@@ -257,13 +258,14 @@ interface ResponseCard {
 
 | API | 응답 |
 | --- | --- |
-| `GET /designers/:id` | `{ id, nickname, verified, shopName, area, instagram, temperature, reviewCount, verifiedWorkCount, manualWorkCount }` |
+| `GET /designers/:id` | `{ id, nickname, verified, shopName, area, instagram, temperature, reviewCount, verifiedWorkCount, manualWorkCount, recentDisputes90d }` |
 | `GET /designers/:id/portfolio` | `?source=verified` / `manual`, `&similarToMe=true` → `{ items: [{ id, source, styleTag, treatmentType, beforeCard, designImageUrl, resultImageUrl, hairTags, completedAt }] }` |
 | `GET /designers/:id/reviews` | 손님이 쓴 후기만. `{ items: [{ manner, promiseKept, satisfaction, text, createdAt }] }` |
 
 - `beforeCard`는 사진이 아니라 카드 스냅샷의 모발 정보입니다(클라이언트가 카드로 그림)
 - `similarToMe`는 로그인한 손님의 서버 모발 프로필로 `hairTags`를 걸러냅니다
 - `verifiedWorkCount`는 완료된 매칭 수입니다. 사진 공개에 동의하지 않았거나 자동 완료된 건도 세므로, 포트폴리오에 보이는 인증 작업물 수보다 클 수 있습니다
+- `recentDisputes90d`는 최근 90일 동안 이의 제기(`disputed`)된 매칭 수입니다. 이의 제기 시각 컬럼이 없어 완료 요청 시각으로 세므로 최대 7일 더 길게 셉니다
 
 ### 시술 완료 확인 · C-06 (WF-11)
 
@@ -292,7 +294,7 @@ interface ResponseCard {
 
 매칭이 `completed`일 때만, 완료(자동 완료 포함) 후 7일 안에 역할당 1회입니다. 두 번째는 409 `already_responded`.
 
-온도 반영값: 손님 → 디자이너 `satisfaction`은 good +0.5 · ok 0 · bad −1.0, 디자이너 → 손님 `promiseKept`는 yes +0.2 · partly 0 · no(노쇼) −1.0입니다. 시작값 36.5이고 0~99.9로 제한합니다.
+온도 반영값: 손님 → 디자이너 `satisfaction`은 good +0.2 · ok 0 · bad −0.4 (5점 척도의 5·3·1점), 손님 이의 제기는 디자이너 −0.5, 디자이너 → 손님 `promiseKept`는 yes +0.2 · partly 0 · no(노쇼) −1.0입니다. 시작값 36.5이고 0~99.9로 제한합니다.
 
 ## 디자이너 · 알림 · 신고
 
