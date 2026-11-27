@@ -261,6 +261,11 @@ export function createMemoryRepo(seed: MemorySeed = {}): Repo & { state: () => M
         const counts = countBy([...state.matches.values()].filter((m) => m.status === 'completed'), (m) => m.designerId);
         return new Map(designerIds.map((id) => [id, counts.get(id) ?? 0]));
       },
+      async countRecentDisputes(designerIds, since) {
+        const recent = [...state.matches.values()].filter((m) => m.status === 'disputed' && m.completeRequestedAt && m.completeRequestedAt >= since);
+        const counts = countBy(recent, (m) => m.designerId);
+        return new Map(designerIds.map((id) => [id, counts.get(id) ?? 0]));
+      },
       async hasActiveMatch(userId) {
         for (const m of state.matches.values()) {
           if ((m.customerId === userId || m.designerId === userId) && (m.status === 'accepted' || m.status === 'complete_requested')) return true;

@@ -138,10 +138,12 @@ update designer_profiles set verify_status = 'rejected', reject_reason = '면허
 
 | 후기 | 반영 |
 |---|---|
-| 손님 → 디자이너 `satisfaction` | good +0.5 · ok 0 · bad −1.0 |
+| 손님 → 디자이너 `satisfaction` | good +0.2 · ok 0 · bad −0.4 (5점 척도의 5·3·1점) |
+| 손님 이의 제기 (`POST /matches/:id/dispute`) | 디자이너 −0.5 |
+| 7일 미확인 자동 완료 | 0 |
 | 디자이너 → 손님 `promiseKept` | yes +0.2 · partly 0 · no(노쇼) −1.0 |
 
-시작값은 36.5이고, 0~99.9 사이로 제한됩니다. 수치는 [src/services/matches.ts](src/services/matches.ts)의 `TEMPERATURE_DELTA`에 있습니다.
+시작값은 36.5이고, 0~99.9 사이로 제한됩니다. 디자이너 등급(가위)은 저장하지 않고 화면에서 온도·완료 건수·최근 90일 이의 제기 수(`recentDisputes90d`)로 계산합니다. 수치는 [src/services/matches.ts](src/services/matches.ts)의 `TEMPERATURE_DELTA`에 있습니다.
 
 ## 배포 (Vercel)
 

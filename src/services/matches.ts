@@ -18,8 +18,14 @@ import { applyTreatment, profileBefore, profileToRow } from './hairProfile.js';
 import { checkUploadKey } from './uploads.js';
 
 /** 온도 변화 (팀 결정 3): 디자이너 = 손님의 결과 만족도, 손님 = 디자이너가 남긴 약속 이행('no' = 노쇼) */
+/**
+ * 온도 반영값 (2026-11-28 등급 기준 반영).
+ * 디자이너: 만족도 3단계 = 5점 척도의 5·3·1점 (+0.2 · 0 · −0.4), 손님 이의 제기 −0.5, 7일 자동 완료 0.
+ * 손님: 약속 이행 (디자이너가 남김).
+ */
 export const TEMPERATURE_DELTA = {
-  satisfaction: { good: 0.5, ok: 0, bad: -1.0 } as Record<Satisfaction, number>,
+  satisfaction: { good: 0.2, ok: 0, bad: -0.4 } as Record<Satisfaction, number>,
+  dispute: -0.5,
   promiseKept: { yes: 0.2, partly: 0, no: -1.0 } as Record<PromiseKept, number>,
   min: 0,
   max: 99.9,
@@ -210,6 +216,7 @@ export async function disputeMatch(d: AppDeps, userId: string, id: string, body:
     if (!cur || cur.status !== 'complete_requested') throw invalidState('완료 요청(complete_requested)된 매칭만 이의를 제기할 수 있음');
     await repo.updateMatch(cur.id, { status: 'disputed', disputeReason: note ? `${reason}: ${note}` : reason! });
     await repo.updateRequest(cur.requestId, { status: 'cancelled', designHiddenAt: now, updatedAt: now });
+    await repo.adjustTemperature(cur.designerId, TEMPERATURE_DELTA.dispute, TEMPERATURE_DELTA.min, TEMPERATURE_DELTA.max);
   });
   return { status: 'disputed' };
 }

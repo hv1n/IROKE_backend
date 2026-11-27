@@ -239,6 +239,8 @@ export interface ResponseCard {
     area: string;
     temperature: number;
     verifiedWorkCount: number;
+    /** 최근 90일 이의 제기 수 (DesignerPublicProfile과 같음) */
+    recentDisputes90d: number;
   };
 }
 
@@ -326,6 +328,8 @@ export interface DesignerPublicProfile {
   /** 완료된 매칭 수 (사진 비공개·자동 완료 포함 → 포트폴리오 인증 작업물 수보다 클 수 있음) */
   verifiedWorkCount: number;
   manualWorkCount: number;
+  /** 최근 90일 이의 제기(disputed) 수. 다이아 등급 조건(0건)에 쓴다. 완료 요청 시각 기준이라 최대 7일 더 길게 센다 */
+  recentDisputes90d: number;
 }
 
 export type PortfolioSource = 'verified' | 'manual';

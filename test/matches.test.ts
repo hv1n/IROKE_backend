@@ -117,8 +117,23 @@ describe('완료 요청 → 확인', () => {
     const st = t.repo.state();
     expect(st.matches.get(matchId)).toMatchObject({ status: 'disputed', disputeReason: 'different: 컬이 거의 없어요' });
     expect(st.requests.get(requestId)).toMatchObject({ status: 'cancelled' });
+    // 이의 제기는 디자이너 온도 −0.5, 최근 90일 이의 제기 수에 잡힌다
+    expect((await t.repo.getUser(SEED_IDS.designer1))!.temperature).toBe(36.7);
+    expect((await t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: tokens.customer })).body.recentDisputes90d).toBe(1);
     expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: tokens.customer, body: { satisfaction: 'bad' } })).body.code).toBe('invalid_state');
     expect((await t.call('POST', `/matches/${matchId}/confirm`, { token: tokens.customer, body: { portfolioConsent: false } })).body.code).toBe('invalid_state');
+  });
+
+  it('최근 90일 이의 제기 수: 완료 요청 시각 기준으로 90일이 지나면 빠진다', async () => {
+    const s = await matched();
+    await s.t.call('POST', `/matches/${s.matchId}/complete`, { token: s.tokens.designer });
+    await s.t.call('POST', `/matches/${s.matchId}/dispute`, { token: s.tokens.customer, body: { reason: 'not_done' } });
+    s.t.advance(89 * DAY);
+    await s.relogin();
+    expect((await s.t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: s.tokens.customer })).body.recentDisputes90d).toBe(1);
+    s.t.advance(2 * DAY);
+    await s.relogin();
+    expect((await s.t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: s.tokens.customer })).body.recentDisputes90d).toBe(0);
   });
 
   it('7일 미확인 → 자동 완료(auto_completed). 모발 프로필 갱신·포트폴리오 공개 없음. 조회 시에도 반영', async () => {
@@ -162,8 +177,8 @@ describe('후기 · 온도', () => {
       body: { satisfaction: 'good', manner: 'good', promiseKept: 'yes', text: '설명이 친절했어요' },
     });
     expect(res.status).toBe(201);
-    expect(res.body).toEqual({ reviewId: expect.any(String), targetTemperature: 37.7 });
-    expect((await t.repo.getUser(SEED_IDS.designer1))!.temperature).toBe(37.7);
+    expect(res.body).toEqual({ reviewId: expect.any(String), targetTemperature: 37.4 });
+    expect((await t.repo.getUser(SEED_IDS.designer1))!.temperature).toBe(37.4);
     const again = await t.call('POST', `/matches/${matchId}/reviews`, { token: tokens.customer, body: { satisfaction: 'bad' } });
     expect(again.status).toBe(409);
     expect(again.body.code).toBe('already_responded');

@@ -147,6 +147,22 @@ describe('Postgres 구현체 (PGlite)', { timeout: 20_000 }, () => {
     expect(await repo.isImageKeyReferenced('request_design/x/y')).toBe(false);
   });
 
+  it('이의 제기: 디자이너 온도 −0.5, 최근 90일 이의 제기 수 (complete_requested_at 기준)', async () => {
+    const t = pg();
+    const customer = await t.login(SEED_KAKAO_IDS.customer1);
+    const d1 = await t.login(SEED_KAKAO_IDS.designer1);
+    const id = (await t.createRequest(customer)).body.id;
+    const r1 = (await t.call('POST', `/requests/${id}/responses`, { token: d1, body: t.responseBody() })).body.id;
+    const matchId = (await t.call('POST', `/responses/${r1}/accept`, { token: customer })).body.matchId;
+    await t.call('POST', `/matches/${matchId}/complete`, { token: d1 });
+    expect((await t.call('POST', `/matches/${matchId}/dispute`, { token: customer, body: { reason: 'different' } })).body).toEqual({ status: 'disputed' });
+    expect((await repo.getUser(SEED_IDS.designer1))!.temperature).toBe(36.7);
+    const since = (days: number) => new Date(t.now().getTime() - days * DAY);
+    expect((await repo.countRecentDisputes([SEED_IDS.designer1, SEED_IDS.designer2], since(90))).get(SEED_IDS.designer1)).toBe(1);
+    expect((await repo.countRecentDisputes([SEED_IDS.designer1, SEED_IDS.designer2], since(90))).get(SEED_IDS.designer2)).toBe(0);
+    expect((await repo.countRecentDisputes([SEED_IDS.designer1], new Date(t.now().getTime() + DAY))).get(SEED_IDS.designer1)).toBe(0);
+  });
+
   it('P2: 완료 요청 → 확인(포트폴리오·모발 프로필) → 후기·온도 → 알림 · D-04 · 면허 결과 · 자동 완료 · 리마인드', async () => {
     const t = pg();
     const cron = { authorization: `Bearer ${CRON_SECRET}` };
@@ -172,10 +188,10 @@ describe('Postgres 구현체 (PGlite)', { timeout: 20_000 }, () => {
     expect(portfolio.body.items[0].beforeCard).toMatchObject({ length: 'medium' });
     expect(await repo.isImageKeyReferenced(front)).toBe(true);
 
-    expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: customer, body: { satisfaction: 'good', text: '좋아요' } })).body.targetTemperature).toBe(37.7);
+    expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: customer, body: { satisfaction: 'good', text: '좋아요' } })).body.targetTemperature).toBe(37.4);
     expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: customer, body: { satisfaction: 'good' } })).body.code).toBe('already_responded');
     expect((await t.call('POST', `/matches/${matchId}/reviews`, { token: d1, body: { promiseKept: 'no' } })).body.targetTemperature).toBe(35.5);
-    expect((await t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: customer })).body).toMatchObject({ reviewCount: 1, verifiedWorkCount: 1, temperature: 37.7 });
+    expect((await t.call('GET', `/designers/${SEED_IDS.designer1}`, { token: customer })).body).toMatchObject({ reviewCount: 1, verifiedWorkCount: 1, temperature: 37.4, recentDisputes90d: 0 });
     expect((await t.call('GET', `/designers/${SEED_IDS.designer1}/reviews`, { token: customer })).body.items[0]).toMatchObject({ satisfaction: 'good', text: '좋아요' });
     expect((await t.call('GET', '/designers/me/responses?tab=done', { token: d1 })).body.items[0]).toMatchObject({ canReview: false });
 

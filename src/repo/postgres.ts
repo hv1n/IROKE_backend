@@ -271,6 +271,16 @@ function ops(sql: AnySql, inTx: boolean): Repo {
       for (const r of rows) m.set(r.designerId as string, Number(r.n));
       return m;
     },
+    async countRecentDisputes(designerIds, since) {
+      const m = new Map(designerIds.map((id) => [id, 0]));
+      if (!designerIds.length) return m;
+      const rows = await sql`
+        select designer_id, count(*)::int as n from matches
+        where status = 'disputed' and complete_requested_at >= ${since}
+          and designer_id = any(${designerIds}::uuid[]) group by designer_id`;
+      for (const r of rows) m.set(r.designerId as string, Number(r.n));
+      return m;
+    },
     async hasActiveMatch(userId) {
       const [r] = await sql`
         select exists (
